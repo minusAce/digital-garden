@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 Island Terrarium</title>
-    <script defer src="/_vercel/insights/script.js"></script>
+    <title>🌸 Island Terrarium 🌸</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -115,7 +114,7 @@
     </div>
 
     <!-- TOP CENTER: Title -->
-    <div id="tc"><div id="tbadge">🌸 My Island Terrarium</div></div>
+    <div id="tc"><div id="tbadge">🌸 My Island Terrarium 🌸</div></div>
 
     <!-- BOTTOM LEFT: Bells + Action Bar -->
     <div id="bl">
@@ -129,7 +128,7 @@
         <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:10px;">⚙️ Settings</div>
         <div class="sl">Terrarium Name</div>
         <input class="si" id="nameinput" value="My Island Terrarium"
-               oninput="document.getElementById('tbadge').textContent='🌸 '+this.value">
+               oninput="const n=this.value||'Island Terrarium';document.getElementById('tbadge').textContent='🌸 '+n+' 🌸';document.title='🌸 '+n+' 🌸';localStorage.setItem('t_name',n)">
         <div class="sl">View</div>
         <button class="btn blu full" onclick="hideUI()">🙈 Hide UI &nbsp;<span style="opacity:.6;font-size:10px">(click to restore)</span></button>
         <div class="sl">Danger Zone</div>
@@ -176,7 +175,7 @@
             'pink+pink':['pink','white'],'pink+red':['pink','red'],
             'pink+white':['pink','white'],'black+red':['purple'],
             'pink+orange':['orange'],'red+yellow':['orange'],
-            'purple+white':['blue'],'orange+purple':['blue'],
+            'purple+white':['blue'],'orange+purple':['blue'], 'black+black':['gold'],
         },
         tulip: {
             'red+yellow':['orange'],'red+white':['pink'],'red+red':['black'],
@@ -234,7 +233,7 @@
     const GROW_BASE = 100 / (48 * 3600 * 1000);
     const MATURE = 100, BREED = 200;
     // ── FIXED: PLANT_R now matches visible island boundary ──
-    const PLANT_R = 9.0, ISLAND_R = 9.5;
+    const PLANT_R = 9.75, ISLAND_R = 9.75;
 
     /* ═══════════════════════════════════════════════
        THREE.JS SCENE
@@ -293,8 +292,17 @@
     const grass = new THREE.Mesh(new THREE.CylinderGeometry(ISLAND_R, ISLAND_R, 0.45, 64), grassMat);
     grass.position.y = 0.22; grass.receiveShadow = true; scene.add(grass);
 
+    /* Invisible flat plane at grass-top height — used for raycasting everywhere on island */
+    const rayPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(60, 60),
+        new THREE.MeshBasicMaterial({ visible:false, side:THREE.DoubleSide })
+    );
+    rayPlane.rotation.x = -Math.PI / 2;
+    rayPlane.position.y = 0.445;
+    scene.add(rayPlane);
+
     const domeMat = new THREE.MeshPhongMaterial({
-        color:0xc8e8ff, transparent:true, opacity:0.07, shininess:150, side:THREE.DoubleSide
+        color:0xc8e8ff, transparent:true, opacity:0.07, shininess:150, side:THREE.DoubleSide, depthWrite: false
     });
     const dome = new THREE.Mesh(
         new THREE.SphereGeometry(ISLAND_R+0.5, 32, 32, 0, Math.PI*2, 0, Math.PI/2), domeMat);
@@ -543,40 +551,54 @@
         return g;
     }
 
-    /* Stage 1 – Stem: taller stem with proper leaves */
-    function mkStemMesh(color, ghost=false) {
+    /* Stage 1 – Stem: taller stem with proper leaves (type-aware) */
+    function mkStemMesh(type, color, ghost=false) {
         const op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
         const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:20});
         // Main stem
         const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.042,0.65,6), SM(0x44aa44));
         stem.position.y=0.325; g.add(stem);
-        // Two leaves at mid-height
-        for (let i=0;i<2;i++) {
-            const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM(0x55bb44));
-            leaf.scale.set(0.36,0.16,1.15);
-            leaf.position.set(i===0?0.15:-0.15, 0.26, i===0?0.04:-0.04);
-            leaf.rotation.z = i===0 ? -0.5 : 0.5;
-            leaf.rotation.y = i===0 ? -0.25 : 0.25;
-            g.add(leaf);
+
+        if (type==='hyacinth' || type==='tulip') {
+            // Strap-like leaves — wide and long
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.18,7,5), SM(0x55bb44));
+                leaf.scale.set(0.25,0.14,1.7);
+                leaf.position.set(i===0?0.14:-0.14, 0.22, i===0?0.03:-0.03);
+                leaf.rotation.z = i===0 ? -0.38 : 0.38;
+                g.add(leaf);
+            }
+        } else {
+            // Standard leaves
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM(0x55bb44));
+                leaf.scale.set(0.36,0.16,1.15);
+                leaf.position.set(i===0?0.15:-0.15, 0.26, i===0?0.04:-0.04);
+                leaf.rotation.z = i===0 ? -0.5 : 0.5;
+                leaf.rotation.y = i===0 ? -0.25 : 0.25;
+                g.add(leaf);
+            }
+            // Small leaf higher up
+            const leaf2 = new THREE.Mesh(new THREE.SphereGeometry(0.10,6,4), SM(0x55bb44));
+            leaf2.scale.set(0.35,0.16,0.9); leaf2.position.set(0.12,0.48,0); leaf2.rotation.z=-0.3; g.add(leaf2);
         }
-        // Small leaf higher up
-        const leaf2 = new THREE.Mesh(new THREE.SphereGeometry(0.10,6,4), SM(0x55bb44));
-        leaf2.scale.set(0.35,0.16,0.9); leaf2.position.set(0.12,0.48,0); leaf2.rotation.z=-0.3; g.add(leaf2);
         // Hitbox
         const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.75,8), new THREE.MeshBasicMaterial({visible:false}));
         hb.position.y=0.35; g.add(hb);
         return g;
     }
 
-    /* Stage 2 – Bud: stem + leaves + tight closed bud in flower color */
+    /* Stage 2 – Bud: type-specific closed bud in flower color */
     function mkBudMesh(type, color, ghost=false) {
         const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
         const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:25,side:THREE.DoubleSide});
+        const pM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:30,side:THREE.DoubleSide});
+        const H=0.8, budY=H+0.08;
         // Stem
-        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033,0.04,0.8,6), SM(0x44aa44));
-        stem.position.y=0.4; stem.castShadow=true; g.add(stem);
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033,0.04,H,6), SM(0x44aa44));
+        stem.position.y=H/2; stem.castShadow=true; g.add(stem);
         // Leaves
         for (let i=0;i<2;i++) {
             const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.15,7,5), SM(0x55bb44));
@@ -585,17 +607,103 @@
             leaf.rotation.z = i===0?-0.5:0.5;
             g.add(leaf);
         }
-        // Bud (egg-shaped, in flower color)
-        const bud = new THREE.Mesh(new THREE.SphereGeometry(0.11,8,8), SM(hex));
-        bud.scale.set(1,1.55,1); bud.position.y=0.91; bud.castShadow=true; g.add(bud);
-        // Green sepals
-        for (let i=0;i<5;i++) {
-            const a=(i/5)*Math.PI*2;
-            const sepal = new THREE.Mesh(new THREE.SphereGeometry(0.06,5,4), SM(0x338833));
-            sepal.scale.set(0.45,1.1,0.55);
-            sepal.position.set(Math.cos(a)*0.08, 0.8, Math.sin(a)*0.08);
-            sepal.rotation.z=Math.cos(a)*0.45; sepal.rotation.x=Math.sin(a)*0.45;
-            g.add(sepal);
+
+        if (type==='rose') {
+            // Elongated pointed rose bud
+            const bud = new THREE.Mesh(new THREE.SphereGeometry(0.095,8,8), pM(hex));
+            bud.scale.set(0.82,1.95,0.82); bud.position.y=budY; bud.castShadow=true; g.add(bud);
+            // Slight spiral outer petal hint
+            const outerCol = new THREE.Color(hex).multiplyScalar(0.8);
+            const op2 = new THREE.Mesh(new THREE.SphereGeometry(0.06,7,5), pM(outerCol));
+            op2.scale.set(0.7,1.1,0.4); op2.position.set(0.07,budY+0.05,0.03); op2.rotation.z=-0.4; g.add(op2);
+            // Green sepals
+            for (let i=0;i<5;i++) {
+                const a=(i/5)*Math.PI*2;
+                const s = new THREE.Mesh(new THREE.SphereGeometry(0.055,5,4), SM(0x338833));
+                s.scale.set(0.38,1.55,0.38);
+                s.position.set(Math.cos(a)*0.08,budY-0.1,Math.sin(a)*0.08);
+                s.rotation.z=Math.cos(a)*0.5; s.rotation.x=Math.sin(a)*0.5; g.add(s);
+            }
+        }
+        else if (type==='tulip') {
+            // Fat rounded tulip bud, smooth and egg-shaped
+            const bud = new THREE.Mesh(new THREE.SphereGeometry(0.115,8,8), pM(hex));
+            bud.scale.set(1,1.7,1); bud.position.y=budY; bud.castShadow=true; g.add(bud);
+            // Green baseband
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.06,0.1,8), SM(0x44aa44));
+            base.position.y=budY-0.12; g.add(base);
+        }
+        else if (type==='hyacinth') {
+            // Dense tight cluster of tiny floret buds forming spike
+            const spike = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,0.22,8), SM(0x44aa44));
+            spike.position.y=budY; g.add(spike);
+            for (let row=0;row<3;row++) {
+                const n=5+row, rad=0.06+row*0.015;
+                for (let i=0;i<n;i++) {
+                    const a=(i/n)*Math.PI*2+row*0.5;
+                    const b = new THREE.Mesh(new THREE.SphereGeometry(0.042-row*0.003,6,5), pM(new THREE.Color(hex).multiplyScalar(0.75+row*0.1)));
+                    b.position.set(Math.cos(a)*rad, budY+row*0.07, Math.sin(a)*rad); g.add(b);
+                }
+            }
+        }
+        else if (type==='lily') {
+            // Nodding elongated bud, slightly bent
+            const bud = new THREE.Mesh(new THREE.SphereGeometry(0.09,8,8), pM(hex));
+            bud.scale.set(0.7,1.85,0.7); bud.position.y=budY; bud.rotation.z=0.28; bud.castShadow=true; g.add(bud);
+            // Green visible sepal tips
+            for (let i=0;i<3;i++) {
+                const a=(i/3)*Math.PI*2;
+                const s = new THREE.Mesh(new THREE.SphereGeometry(0.055,5,4), SM(0x44aa44));
+                s.scale.set(0.32,1.4,0.35); s.position.set(Math.cos(a)*0.06,budY-0.1,Math.sin(a)*0.06);
+                s.rotation.z=Math.cos(a)*0.45; s.rotation.x=Math.sin(a)*0.45; g.add(s);
+            }
+        }
+        else if (type==='pansy') {
+            // Round slightly flat bud
+            const bud = new THREE.Mesh(new THREE.SphereGeometry(0.12,8,8), pM(hex));
+            bud.scale.set(1.1,0.8,1.1); bud.position.y=budY; bud.castShadow=true; g.add(bud);
+            const cal = new THREE.Mesh(new THREE.SphereGeometry(0.09,6,5), SM(0x338833));
+            cal.scale.set(1.1,0.4,1.1); cal.position.y=budY-0.1; g.add(cal);
+        }
+        else if (type==='cosmos') {
+            // Small tightly-closed head, petals barely visible
+            const center = new THREE.Mesh(new THREE.SphereGeometry(0.045,8,8), pM(0xddaa00));
+            center.scale.set(1,0.6,1); center.position.y=budY; g.add(center);
+            for (let i=0;i<8;i++) {
+                const a=(i/8)*Math.PI*2;
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.042,5,4), pM(hex));
+                p.scale.set(0.5,1.25,0.38); p.position.set(Math.cos(a)*0.075, budY-0.02, Math.sin(a)*0.075);
+                p.rotation.y=-a; g.add(p);
+            }
+        }
+        else if (type==='mum') {
+            // Tight green-tipped ball of petals
+            const core = new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8), pM(hex));
+            core.position.y=budY; g.add(core);
+            for (let i=0;i<10;i++) {
+                const a=(i/10)*Math.PI*2, elev=(-0.2+Math.random()*0.5);
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.038,5,4), pM(new THREE.Color(hex).multiplyScalar(0.8)));
+                p.scale.set(0.35,0.32,1.2); p.position.set(Math.cos(a)*0.12,budY+elev*0.08,Math.sin(a)*0.12);
+                p.rotation.y=-a; g.add(p);
+            }
+        }
+        else if (type==='windflower') {
+            // Rounded compact bud
+            const bud = new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8), pM(hex));
+            bud.scale.set(1.15,0.88,1.15); bud.position.y=budY; bud.castShadow=true; g.add(bud);
+            const cup = new THREE.Mesh(new THREE.SphereGeometry(0.09,6,5), SM(0x338833));
+            cup.scale.set(1.1,0.32,1.1); cup.position.y=budY-0.09; g.add(cup);
+        }
+        else {
+            // Generic fallback
+            const bud = new THREE.Mesh(new THREE.SphereGeometry(0.11,8,8), pM(hex));
+            bud.scale.set(1,1.55,1); bud.position.y=budY; g.add(bud);
+            for (let i=0;i<5;i++) {
+                const a=(i/5)*Math.PI*2;
+                const sepal = new THREE.Mesh(new THREE.SphereGeometry(0.06,5,4), SM(0x338833));
+                sepal.scale.set(0.45,1.1,0.55); sepal.position.set(Math.cos(a)*0.08,budY-0.1,Math.sin(a)*0.08);
+                sepal.rotation.z=Math.cos(a)*0.45; sepal.rotation.x=Math.sin(a)*0.45; g.add(sepal);
+            }
         }
         // Hitbox
         const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,1.1,8), new THREE.MeshBasicMaterial({visible:false}));
@@ -603,112 +711,197 @@
         return g;
     }
 
-    /* Stage 3 – Bloom: full detailed flower (8 distinct shapes) */
+    /* Stage 3 – Bloom: full detailed flower (8 distinct ACNH-accurate shapes) */
     function mkBloomMesh(type, color, ghost=false) {
         const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
-        const pM = (col) => new THREE.MeshPhongMaterial({color:col,shininess:25,side:THREE.DoubleSide,transparent:tp,opacity:op});
-        const PM=pM(hex), SM=pM(0x44aa44), CM=pM(0xddaa00);
-        const H=0.85;
+        const pM = (col) => new THREE.MeshPhongMaterial({color:col,shininess:30,side:THREE.DoubleSide,transparent:tp,opacity:op});
+        const SM=pM(0x44aa44), CM=pM(0xddaa00), WM=pM(0xeeeeee);
+        const H=0.88; const hy=H;
         const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033,0.04,H,6),SM);
         stem.position.y=H/2; stem.castShadow=true; g.add(stem);
-        const hy=H;
 
         if (type==='rose') {
-            for (let r=0;r<3;r++) {
-                const n=5+r, rad=0.03+r*0.07;
-                for (let i=0;i<n;i++) {
-                    const a=(i/n)*Math.PI*2+r*0.3;
-                    const p=new THREE.Mesh(new THREE.SphereGeometry(0.07-r*.008,7,5),pM(new THREE.Color(hex).multiplyScalar(0.75+r*.12)));
-                    p.scale.set(1,.55,.9); p.position.set(Math.cos(a)*rad,hy+r*.028,Math.sin(a)*rad); p.castShadow=true; g.add(p);
-                }
+            // Classic layered rose: tight inner spiral, opening outer petals
+            // Outer stem leaves
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13,7,5), SM);
+                leaf.scale.set(0.38,0.15,1.2); leaf.position.set(i===0?0.14:-0.14,0.35,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
             }
-            const c=new THREE.Mesh(new THREE.SphereGeometry(0.04,8,8),pM(new THREE.Color(hex).multiplyScalar(0.5)));
-            c.position.y=hy+0.08; g.add(c);
+            // 3 rings of petals forming a cupped rose
+            const ringConf = [{n:5,rad:0.0,sz:0.072,yOff:0,ySz:0.6,mul:0.65},{n:7,rad:0.09,sz:0.08,yOff:0.03,ySz:0.55,mul:0.8},{n:8,rad:0.18,sz:0.085,yOff:0.02,ySz:0.5,mul:1.0}];
+            ringConf.forEach(({n,rad,sz,yOff,ySz,mul},r)=>{
+                for (let i=0;i<n;i++) {
+                    const a=(i/n)*Math.PI*2+r*0.4;
+                    const p=new THREE.Mesh(new THREE.SphereGeometry(sz,8,6), pM(new THREE.Color(hex).multiplyScalar(mul)));
+                    p.scale.set(1,ySz,0.85); p.position.set(Math.cos(a)*rad,hy+yOff+r*0.032,Math.sin(a)*rad);
+                    p.rotation.set(Math.cos(a)*0.25,a,Math.sin(a)*0.25); p.castShadow=true; g.add(p);
+                }
+            });
+            // Center
+            const c=new THREE.Mesh(new THREE.SphereGeometry(0.04,8,8),pM(new THREE.Color(hex).multiplyScalar(0.55)));
+            c.position.y=hy+0.1; g.add(c);
         }
         else if (type==='tulip') {
+            // Stem leaves (tulip has long strap-like leaves)
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.16,7,5), SM);
+                leaf.scale.set(0.28,0.14,1.45); leaf.position.set(i===0?0.15:-0.15,0.38,0); leaf.rotation.z=i===0?-0.4:0.4; g.add(leaf);
+            }
+            // 6 cup-shaped petals forming classic tulip chalice
             for (let i=0;i<6;i++) {
                 const a=(i/6)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.12,8,6),PM);
-                p.scale.set(0.5,1.4,0.5);
-                p.position.set(Math.cos(a)*.07,hy+.12,Math.sin(a)*.07);
-                p.rotation.set(Math.cos(a)*.35,a,Math.sin(a)*.35); p.castShadow=true; g.add(p);
+                const inner=(i%2===0);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.13,8,7), pM(inner ? new THREE.Color(hex).multiplyScalar(0.88) : new THREE.Color(hex)));
+                p.scale.set(0.52,1.55,0.52);
+                // Petals open upward in a cup — outer lean out slightly
+                const lean=inner?0.18:0.32;
+                p.position.set(Math.cos(a)*(0.06+lean*0.18),hy+0.14,Math.sin(a)*(0.06+lean*0.18));
+                p.rotation.set(Math.cos(a)*lean,a,Math.sin(a)*lean); p.castShadow=true; g.add(p);
             }
         }
         else if (type==='pansy') {
-            const pd=[
-                {a:Math.PI/2,s:0.17},{a:Math.PI/2+.75,s:0.15},{a:Math.PI/2-.75,s:0.15},
-                {a:-Math.PI/2+.5,s:0.14},{a:-Math.PI/2-.5,s:0.14},
-            ];
-            pd.forEach(({a,s})=>{
-                const p=new THREE.Mesh(new THREE.SphereGeometry(s,8,6),PM);
-                p.scale.set(1,.18,1.3); p.position.set(Math.cos(a)*s*.85,hy,Math.sin(a)*s*.85); p.castShadow=true; g.add(p);
+            // Pansy: 5 rounded flat petals — 2 upper large, 3 lower (1 center, 2 side)
+            // Stem leaves
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,5), SM);
+                leaf.scale.set(0.9,0.18,0.9); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.6:0.6; g.add(leaf);
+            }
+            const dark=pM(new THREE.Color(hex).multiplyScalar(0.35));
+            // Upper 2 large petals
+            for (let i=0;i<2;i++) {
+                const a=Math.PI/2+(i===0?0.55:-0.55);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.165,8,7),pM(hex));
+                p.scale.set(1,0.19,1.3); p.position.set(Math.cos(a)*0.14,hy+0.02,Math.sin(a)*0.14);
+                p.rotation.set(0.1,a-Math.PI/2,0); p.castShadow=true; g.add(p);
+            }
+            // Lower 3 petals
+            const lAngles=[-Math.PI/2, -Math.PI/2+0.75, -Math.PI/2-0.75];
+            lAngles.forEach(a=>{
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.155,8,7),pM(hex));
+                p.scale.set(1,0.18,1.25); p.position.set(Math.cos(a)*0.13,hy,Math.sin(a)*0.13);
+                p.rotation.set(0.08,a-Math.PI/2,0); p.castShadow=true; g.add(p);
             });
-            const c=new THREE.Mesh(new THREE.SphereGeometry(.038,7,7),CM); c.position.y=hy+.02; g.add(c);
+            // Dark face markings (inner dark blotch)
+            for (let i=0;i<3;i++) {
+                const a=-Math.PI/2+(i-1)*0.5;
+                const m=new THREE.Mesh(new THREE.SphereGeometry(0.055,6,5),dark);
+                m.scale.set(1,0.16,0.9); m.position.set(Math.cos(a)*0.05,hy+0.01,Math.sin(a)*0.05); g.add(m);
+            }
+            const c=new THREE.Mesh(new THREE.SphereGeometry(0.03,7,7),CM); c.position.y=hy+0.03; g.add(c);
         }
         else if (type==='cosmos') {
+            // Cosmos: 8 narrow oblong petals, prominent yellow button center
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.11,6,5), SM);
+                leaf.scale.set(0.32,0.14,1.1); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+            }
             for (let i=0;i<8;i++) {
                 const a=(i/8)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.PlaneGeometry(.11,.34),PM);
-                p.position.set(Math.cos(a)*.2,hy,Math.sin(a)*.2);
-                p.rotation.set(-Math.PI/2+.2,0,a-Math.PI/2); p.castShadow=true; g.add(p);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.055,7,6),pM(hex));
+                p.scale.set(1,0.26,3.8); p.position.set(Math.cos(a)*0.2,hy-0.01,Math.sin(a)*0.2);
+                p.rotation.set(-0.18,a,0); p.castShadow=true; g.add(p);
             }
-            const c=new THREE.Mesh(new THREE.SphereGeometry(.065,8,8),CM); c.scale.set(1,.5,1); c.position.y=hy; g.add(c);
+            // Button center
+            const c=new THREE.Mesh(new THREE.SphereGeometry(0.075,10,8),pM(0xf5c300)); c.scale.set(1,0.55,1); c.position.y=hy+0.01; g.add(c);
+            // Tiny center dots
+            for (let i=0;i<6;i++) {
+                const a=(i/6)*Math.PI*2;
+                const d=new THREE.Mesh(new THREE.SphereGeometry(0.014,5,5),pM(0xcc8800));
+                d.position.set(Math.cos(a)*0.04,hy+0.03,Math.sin(a)*0.04); g.add(d);
+            }
         }
         else if (type==='lily') {
-            for (let i=0;i<6;i++) {
-                const a=(i/6)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.SphereGeometry(.13,7,5),PM);
-                p.scale.set(.38,.14,1.9); p.position.set(Math.cos(a)*.16,hy-.04,Math.sin(a)*.16);
-                p.rotation.set(Math.sin(a)*.6,a,-Math.cos(a)*.6); p.castShadow=true; g.add(p);
+            // Tiger/ACNH lily: 6 strongly reflexed/recurved petals with spots + prominent stamens
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM);
+                leaf.scale.set(0.33,0.14,1.3); leaf.position.set(i===0?0.15:-0.15,0.35,0); leaf.rotation.z=i===0?-0.45:0.45; g.add(leaf);
             }
             for (let i=0;i<6;i++) {
                 const a=(i/6)*Math.PI*2;
-                const st=new THREE.Mesh(new THREE.CylinderGeometry(.007,.007,.22,4),SM);
-                st.position.set(Math.cos(a)*.06,hy+.1,Math.sin(a)*.06); st.rotation.set(Math.cos(a)*.4,0,Math.sin(a)*.4); g.add(st);
-                const tip=new THREE.Mesh(new THREE.SphereGeometry(.018,5,5),CM);
-                tip.position.set(Math.cos(a)*.1,hy+.19,Math.sin(a)*.1); g.add(tip);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.14,8,6),pM(hex));
+                p.scale.set(0.36,0.14,2.1);
+                // Strongly recurved — tips sweep back
+                p.position.set(Math.cos(a)*0.18,hy-0.05,Math.sin(a)*0.18);
+                p.rotation.set(Math.sin(a)*-0.65,a,-Math.cos(a)*0.65); p.castShadow=true; g.add(p);
             }
+            // Prominent stamens with anther tips
+            for (let i=0;i<6;i++) {
+                const a=(i/6)*Math.PI*2;
+                const st=new THREE.Mesh(new THREE.CylinderGeometry(0.009,0.009,0.28,4),SM);
+                st.position.set(Math.cos(a)*0.07,hy+0.1,Math.sin(a)*0.07);
+                st.rotation.set(Math.cos(a)*0.4,0,Math.sin(a)*0.4); g.add(st);
+                const tip=new THREE.Mesh(new THREE.SphereGeometry(0.022,5,5),pM(0xcc4400));
+                tip.position.set(Math.cos(a)*0.12,hy+0.22,Math.sin(a)*0.12); g.add(tip);
+            }
+            // Pistil
+            const pistil=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.008,0.3,4),SM);
+            pistil.position.y=hy+0.15; g.add(pistil);
         }
         else if (type==='hyacinth') {
-            for (let row=0;row<7;row++) {
-                const n=Math.max(3,7-row), rad=Math.max(0.01,0.1-row*.012);
+            // Dense columnar spike of tiny florets (ACNH hyacinth style)
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.17,7,5), SM);
+                leaf.scale.set(0.25,0.14,1.5); leaf.position.set(i===0?0.15:-0.15,0.3,0); leaf.rotation.z=i===0?-0.35:0.35; g.add(leaf);
+            }
+            for (let row=0;row<9;row++) {
+                const n=Math.max(3,9-row), rad=Math.max(0.0,0.115-row*0.01);
                 for (let i=0;i<n;i++) {
-                    const a=(i/n)*Math.PI*2+row*.45;
-                    const b=new THREE.Mesh(new THREE.SphereGeometry(.048-.003*row,6,5),pM(new THREE.Color(hex).multiplyScalar(.7+.05*row)));
-                    b.position.set(Math.cos(a)*rad,hy+row*.085,Math.sin(a)*rad); g.add(b);
+                    const a=(i/n)*Math.PI*2+row*0.42;
+                    const sz=0.052-0.003*row;
+                    const b=new THREE.Mesh(new THREE.SphereGeometry(sz,7,6),pM(new THREE.Color(hex).multiplyScalar(0.65+0.045*row)));
+                    b.scale.set(1,1.05,1);
+                    b.position.set(Math.cos(a)*rad,hy+row*0.09,Math.sin(a)*rad); b.castShadow=true; g.add(b);
                 }
             }
         }
         else if (type==='mum') {
-            for (let r=0;r<5;r++) {
-                const n=8+r*4, rad=r*.055+.01;
+            // Chrysanthemum: dense pompom of thin tubular petals radiating outward
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13,7,5), SM);
+                leaf.scale.set(0.38,0.15,1.1); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+            }
+            for (let r=0;r<6;r++) {
+                const n=7+r*5, rad=r*0.052+0.005;
                 for (let i=0;i<n;i++) {
-                    const a=(i/n)*Math.PI*2+r*.28;
-                    const p=new THREE.Mesh(new THREE.SphereGeometry(.046-r*.003,5,4),
-                        pM(new THREE.Color(hex).multiplyScalar(.6+r*.1)));
-                    p.scale.set(.3,.22,1.65); p.position.set(Math.cos(a)*rad,hy+r*.016,Math.sin(a)*rad);
-                    p.rotation.y=-a; g.add(p);
+                    const a=(i/n)*Math.PI*2+r*0.3;
+                    const elev=Math.max(-0.06, 0.06-r*0.02);
+                    const p=new THREE.Mesh(new THREE.SphereGeometry(0.047-r*0.003,5,4),
+                        pM(new THREE.Color(hex).multiplyScalar(0.55+r*0.09)));
+                    p.scale.set(0.28,0.24,1.75); p.position.set(Math.cos(a)*rad,hy+elev,Math.sin(a)*rad);
+                    p.rotation.set(Math.cos(a)*0.15,-a,Math.sin(a)*0.15); g.add(p);
                 }
             }
+            // Tiny green center
+            const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6),SM); ctr.position.y=hy+0.04; g.add(ctr);
         }
         else if (type==='windflower') {
+            // Anemone: 5 wide overlapping petals, very dark center with white stamens
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,5), SM);
+                leaf.scale.set(0.38,0.14,1.0); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+            }
             for (let i=0;i<5;i++) {
                 const a=(i/5)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),PM);
-                p.scale.set(.88,.21,1.22); p.position.set(Math.cos(a)*.13,hy,Math.sin(a)*.13);
-                p.rotation.y=-a; p.castShadow=true; g.add(p);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.175,9,7),pM(hex));
+                p.scale.set(0.9,0.22,1.3); p.position.set(Math.cos(a)*0.15,hy+0.01,Math.sin(a)*0.15);
+                p.rotation.set(0.12,a,0); p.castShadow=true; g.add(p);
             }
-            const dkCol=new THREE.Color(hex).multiplyScalar(.28);
-            const ctr=new THREE.Mesh(new THREE.SphereGeometry(.06,8,8),pM(dkCol));
-            ctr.scale.set(1,.55,1); ctr.position.y=hy; g.add(ctr);
-            for (let i=0;i<7;i++) {
-                const a=(i/7)*Math.PI*2;
-                const st=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.1,4),pM(0xffffaa));
-                st.position.set(Math.cos(a)*.03,hy+.04,Math.sin(a)*.03); g.add(st);
+            // Very dark (near-black) center button
+            const dkCol=new THREE.Color(hex).multiplyScalar(0.2);
+            const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.065,9,8),pM(dkCol));
+            ctr.scale.set(1,0.55,1); ctr.position.y=hy+0.01; g.add(ctr);
+            // White/cream stamens radiating from center
+            for (let i=0;i<8;i++) {
+                const a=(i/8)*Math.PI*2;
+                const st=new THREE.Mesh(new THREE.CylinderGeometry(0.007,0.007,0.1,4),pM(0xffffcc));
+                st.position.set(Math.cos(a)*0.035,hy+0.05,Math.sin(a)*0.035);
+                st.rotation.set(Math.cos(a)*0.3,0,Math.sin(a)*0.3); g.add(st);
+                const dot=new THREE.Mesh(new THREE.SphereGeometry(0.014,5,5),pM(0xffffaa));
+                dot.position.set(Math.cos(a)*0.045,hy+0.09,Math.sin(a)*0.045); g.add(dot);
             }
         }
-        // Hitbox for bloom too
+        // Hitbox
         const hb=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,1.2,8), new THREE.MeshBasicMaterial({visible:false}));
         hb.position.y=0.6; g.add(hb);
         return g;
@@ -717,7 +910,7 @@
     /* Unified mesh factory — dispatches by stage */
     function mkFlowerMesh(type, color, ghost=false, stage=3) {
         if (stage===0) return mkSeedMesh(ghost);
-        if (stage===1) return mkStemMesh(color, ghost);
+        if (stage===1) return mkStemMesh(type, color, ghost);
         if (stage===2) return mkBudMesh(type, color, ghost);
         return mkBloomMesh(type, color, ghost);
     }
@@ -733,9 +926,16 @@
             // Show at the moving flower's current stage
             ghostGrp.add(mkFlowerMesh(movFlower.type, movFlower.color, true, movFlower.stage));
         } else if (mode==='planting') {
-            // Always preview full bloom when planting
-            ghostGrp.add(mkFlowerMesh(plantType, plantColor, true, 3));
+            // Show seed ghost (stage 0) when planting
+            ghostGrp.add(mkFlowerMesh(plantType, plantColor, true, 0));
         }
+        // Store original colors for valid/invalid tinting
+        ghostGrp.traverse(c=>{
+            if(c.isMesh && c.material && c.material.visible!==false && c.material.color){
+                c.userData.origColor = c.material.color.clone();
+                c.userData.origEmissive = c.material.emissive ? c.material.emissive.clone() : null;
+            }
+        });
         ghostGrp.scale.setScalar(0.85);
     }
 
@@ -941,15 +1141,26 @@
         if (mode==='planting'||mode==='moving') {
             mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
             ray.setFromCamera(mouse,camera);
-            const hits=ray.intersectObject(grass);
+            const hits=ray.intersectObject(rayPlane);
             if (hits.length) {
                 const pt=hits[0].point, gx=Math.round(pt.x), gz=Math.round(pt.z);
                 const ok=!gardenGrid.has(`${gx},${gz}`)&&Math.hypot(gx,gz)<=PLANT_R;
                 ghostGrp.position.set(gx,.4,gz); ghostGrp.visible=true;
-                ghostGrp.traverse(c=>{ if(c.isMesh&&c.material) c.material.opacity=ok?0.65:0.2; });
+                ghostGrp.traverse(c=>{
+                    if(c.isMesh && c.material && c.material.visible!==false){
+                        c.material.opacity = ok ? 0.65 : 0.5;
+                        if(c.material.color && c.userData.origColor){
+                            if(ok) c.material.color.copy(c.userData.origColor);
+                            else   c.material.color.copy(c.userData.origColor).lerp(new THREE.Color(0xff2200), 0.7);
+                        }
+                        if(c.material.emissive){
+                            c.material.emissive.setHex(ok ? 0x002200 : 0x550000);
+                        }
+                    }
+                });
                 cellCursor.position.set(gx,.44,gz); cellCursor.visible=true;
                 cellCursor.material.color.setHex(ok?0x66ff66:0xff4444);
-                cellCursor.material.opacity=ok?0.35:0.3;
+                cellCursor.material.opacity=ok?0.35:0.45;
             } else { ghostGrp.visible=false; cellCursor.visible=false; }
         }
     });
@@ -965,7 +1176,7 @@
         ray.setFromCamera(mouse,camera);
 
         if (mode==='planting') {
-            const hits=ray.intersectObject(grass);
+            const hits=ray.intersectObject(rayPlane);
             if (hits.length) {
                 const pt=hits[0].point, gx=Math.round(pt.x), gz=Math.round(pt.z);
                 if (placeFlower(plantType,plantColor,gx,gz)) { toast(`🌱 Planted ${cap(plantColor)} ${FTYPES[plantType].name}!`); saveFlowers(); }
@@ -974,7 +1185,7 @@
             return;
         }
         if (mode==='moving') {
-            const hits=ray.intersectObject(grass);
+            const hits=ray.intersectObject(rayPlane);
             if (hits.length) { const pt=hits[0].point; confirmMove(Math.round(pt.x),Math.round(pt.z)); }
             return;
         }
@@ -1044,6 +1255,13 @@
     function saveBells() { localStorage.setItem('t_bells', bells.toString()); }
 
     function loadState() {
+        // Load saved terrarium name
+        const savedName = localStorage.getItem('t_name');
+        if (savedName) {
+            document.getElementById('nameinput').value = savedName;
+            document.getElementById('tbadge').textContent = '🌸 ' + savedName + ' 🌸';
+            document.title = '🌸 ' + savedName + ' 🌸';
+        }
         const raw=localStorage.getItem('t2_flowers');
         if (raw) {
             const lastSave=parseInt(localStorage.getItem('t2_lastSave')||'0');
@@ -1151,12 +1369,5 @@
     setInterval(saveBells, 30000);
     animate();
 </script>
-
-<!-- Vercel Speed Insights -->
-<script>
-    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
-
 </body>
 </html>
