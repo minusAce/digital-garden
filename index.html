@@ -531,7 +531,7 @@
         return 3;
     }
 
-    /* Stage 0 – Seed: tiny green sprout poking from soil */
+    /* Stage 1 – Seed: tiny green sprout poking from soil */
     function mkSeedMesh(ghost=false) {
         const op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
@@ -556,7 +556,7 @@
         return g;
     }
 
-    /* Stage 1 – Stem: taller stem with proper leaves (type-aware) */
+    /* Stage 2 – Stem: taller stem with proper leaves (type-aware) */
     function mkStemMesh(type, color, ghost=false) {
         const op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
@@ -594,7 +594,7 @@
         return g;
     }
 
-    /* Stage 2 – Bud: type-specific closed bud in flower color */
+    /* Stage 3 – Bud: type-specific closed bud in flower color */
     function mkBudMesh(type, color, ghost=false) {
         const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
@@ -716,7 +716,7 @@
         return g;
     }
 
-    /* Stage 3 – Bloom: full detailed flower (8 distinct ACNH-accurate shapes) */
+    /* Stage 4 – Bloom: full detailed flower (8 distinct ACNH-accurate shapes) */
     function mkBloomMesh(type, color, ghost=false) {
         const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
