@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 Island Terrarium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root{--cream:rgba(255,248,231,0.95);--border:#C4935A;--txt:#5a3e1b;--grn:#7BC67E;--dgrn:#4a8c4e;--r:16px;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Nunito',sans-serif;overflow:hidden;width:100vw;height:100vh;user-select:none;}
+        canvas{display:block;position:fixed;top:0;left:0;z-index:1;}
+        #ui{position:fixed;inset:0;pointer-events:none;z-index:10;transition:opacity .5s;}
+        body.ui-off #ui{opacity:0;pointer-events:none!important;}
+
+        .panel{background:var(--cream);border:3px solid var(--border);border-radius:var(--r);
+            box-shadow:0 6px 28px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.85);
+            backdrop-filter:blur(14px);pointer-events:auto;}
+
+        /* TOP LEFT – Weather + Time */
+        #wp{position:absolute;top:16px;left:16px;padding:12px 15px;min-width:205px;}
+        .wloc{font-size:10px;font-weight:800;color:#999;letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;}
+        .wmain{display:flex;align-items:center;gap:9px;}
+        .wicon{font-size:28px;line-height:1;}
+        .wtemp{font-size:26px;font-weight:900;color:var(--txt);line-height:1;}
+        .wcond{font-size:11px;font-weight:700;color:#888;margin-top:1px;}
+        .wtime{font-size:12px;font-weight:800;color:#7a5500;margin-top:3px;letter-spacing:.3px;}
+        .wgrow{font-size:10px;font-weight:800;color:var(--dgrn);background:#eaf5ea;padding:3px 9px;border-radius:20px;display:inline-block;margin-top:7px;}
+
+        /* TOP CENTER – Title */
+        #tc{position:absolute;top:16px;left:50%;transform:translateX(-50%);pointer-events:none;text-align:center;}
+        #tbadge{display:inline-block;background:var(--cream);border:3px solid var(--border);border-radius:40px;padding:8px 28px;font-size:19px;font-weight:900;color:var(--txt);box-shadow:0 4px 16px rgba(0,0,0,.1);}
+
+        /* BOTTOM LEFT – Bells + Action */
+        #bl{position:absolute;bottom:16px;left:16px;display:flex;flex-direction:column;gap:7px;align-items:flex-start;max-width:360px;}
+        #bells{display:inline-flex;align-items:center;gap:5px;background:#fff8dc;border:2.5px solid #e8c84a;border-radius:20px;padding:5px 13px;font-size:14px;font-weight:900;color:#7a5500;pointer-events:auto;}
+        #abar{width:100%;}
+        #abar.panel{padding:13px 15px;}
+
+        /* BOTTOM RIGHT – Settings */
+        #sbtn{position:absolute;bottom:16px;right:16px;padding:9px 15px;font-size:14px;font-weight:800;color:var(--txt);cursor:pointer;}
+        #sbtn:hover{filter:brightness(1.04);}
+        #spanel{position:absolute;bottom:66px;right:16px;padding:16px;width:255px;display:none;}
+        .sl{font-size:10px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px;}
+        .si{font-family:'Nunito',sans-serif;width:100%;padding:7px 11px;border:2.5px solid var(--border);border-radius:10px;background:#fff;font-size:12px;font-weight:700;color:var(--txt);margin-bottom:7px;outline:none;}
+
+        /* BUTTONS */
+        .btn{font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;border-radius:10px;padding:6px 11px;
+            cursor:pointer;border:2.5px solid var(--border);transition:transform .1s,filter .1s;pointer-events:auto;white-space:nowrap;line-height:1.3;}
+        .btn:hover{transform:scale(1.05);filter:brightness(1.08);}
+        .btn:active{transform:scale(.96);}
+        .btn.grn{background:#c8ebb0;color:#2a5c1a;border-color:#7BC67E;}
+        .btn.gld{background:#fff0c0;color:#7a5500;border-color:#e8c84a;}
+        .btn.blu{background:#c0d8f8;color:#1a3a6a;border-color:#6aaae8;}
+        .btn.red{background:#ffd0cc;color:#7a1a1a;border-color:#e08888;}
+        .btn.gry{background:#eee;color:#555;border-color:#bbb;}
+        .btn.full{width:100%;margin-bottom:5px;}
+
+        /* FLOWER TYPE PICKER */
+        .tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;}
+        .tbtn{border-radius:9px;border:2px solid #ddd;background:#fff;font-size:11px;cursor:pointer;pointer-events:auto;
+            display:flex;flex-direction:column;align-items:center;padding:5px 3px;transition:all .13s;}
+        .tbtn span{font-size:9px;font-weight:800;color:#888;margin-top:2px;}
+        .tbtn.on{border-color:var(--border);box-shadow:0 0 0 2px rgba(196,147,90,.3);background:#fff8ee;}
+        .tbtn:hover:not(.on){border-color:#bbb;background:#f8f8f8;}
+
+        /* COLOR PICKER */
+        .crow{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+        .cdot{width:24px;height:24px;border-radius:50%;border:2.5px solid rgba(0,0,0,.15);cursor:pointer;transition:all .12s;pointer-events:auto;}
+        .cdot.on{border-color:#333;box-shadow:0 0 0 2.5px rgba(0,0,0,.3);transform:scale(1.2);}
+        .cdot:hover:not(.on){transform:scale(1.1);}
+
+        /* PREVIEW + STATUS */
+        .ptag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.6);border:1.5px dashed var(--border);border-radius:8px;font-size:11px;font-weight:800;color:var(--txt);margin-bottom:7px;}
+        .mbadge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;background:#e8f5e9;color:#2e7d32;border:2px solid #81c784;white-space:nowrap;}
+        .mbadge.mv{background:#e8f0fe;color:#1a237e;border-color:#7986cb;}
+        .arow{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+
+        /* SELECTED FLOWER */
+        .srow{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,.65);border-radius:10px;margin-bottom:7px;}
+        .sname{font-size:12px;font-weight:900;color:var(--txt);}
+        .sgrow{font-size:10px;color:#888;font-weight:700;}
+        .gbwrap{width:65px;height:5px;background:#e0d8c8;border-radius:99px;margin-top:2px;overflow:hidden;}
+        .gb{height:5px;background:var(--grn);border-radius:99px;transition:width .4s;}
+        .csm{width:13px;height:13px;border-radius:50%;border:1.5px solid #aaa;flex-shrink:0;}
+        .stagepip{display:flex;gap:3px;margin-top:3px;}
+        .stagepip span{width:12px;height:4px;border-radius:3px;background:#e0d8c8;}
+        .stagepip span.active{background:var(--grn);}
+
+        /* TOASTS */
+        #tbox{position:absolute;bottom:100px;left:16px;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:4px;z-index:20;}
+        .toast{background:var(--cream);border:2.5px solid var(--border);border-radius:11px;padding:7px 15px;font-weight:800;font-size:12px;color:var(--txt);animation:ta 3s forwards;}
+        @keyframes ta{0%{opacity:0;transform:translateY(8px)}12%{opacity:1;transform:translateY(0)}75%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="ui">
+
+    <!-- TOP LEFT: Weather + Time -->
+    <div id="wp" class="panel">
+        <div class="wloc" id="wloc">📍 Locating…</div>
+        <div class="wmain">
+            <span class="wicon" id="wicon">⏳</span>
+            <div>
+                <div class="wtemp" id="wtemp">--°</div>
+                <div class="wcond" id="wcond">Loading…</div>
+                <div class="wtime" id="wtime">--:-- --</div>
+            </div>
+        </div>
+        <div class="wgrow" id="wgrow">🌿 Loading…</div>
+    </div>
+
+    <!-- TOP CENTER: Title -->
+    <div id="tc"><div id="tbadge">🌸 My Island Terrarium</div></div>
+
+    <!-- BOTTOM LEFT: Bells + Action Bar -->
+    <div id="bl">
+        <div id="bells">🔔 <span id="bellsamt">1,000</span> Bells</div>
+        <div id="abar" class="panel"></div>
+    </div>
+
+    <!-- BOTTOM RIGHT: Settings -->
+    <div id="sbtn" class="panel" onclick="toggleSettings()">⚙️ Settings</div>
+    <div id="spanel" class="panel">
+        <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:10px;">⚙️ Settings</div>
+        <div class="sl">Terrarium Name</div>
+        <input class="si" id="nameinput" value="My Island Terrarium"
+               oninput="document.getElementById('tbadge').textContent='🌸 '+this.value">
+        <div class="sl">View</div>
+        <button class="btn blu full" onclick="hideUI()">🙈 Hide UI &nbsp;<span style="opacity:.6;font-size:10px">(click to restore)</span></button>
+        <div class="sl">Danger Zone</div>
+        <button class="btn red full" onclick="if(confirm('Remove all flowers?'))clearAll()">🗑️ Clear All Flowers</button>
+        <button class="btn gry full" onclick="toggleSettings()">✕ Close</button>
+    </div>
+
+    <div id="tbox"></div>
+</div>
+
+<script>
+    /* ═══════════════════════════════════════════════
+       FLOWER DEFINITIONS
+    ═══════════════════════════════════════════════ */
+    const FTYPES = {
+        rose:       { emoji:'🌹', name:'Rose',       seeds:['red','white'],          colors:['red','white','pink','orange','black','purple','blue'] },
+        tulip:      { emoji:'🌷', name:'Tulip',      seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black','purple'] },
+        pansy:      { emoji:'🪷', name:'Pansy',      seeds:['red','yellow','white'], colors:['red','yellow','white','orange','blue','purple'] },
+        cosmos:     { emoji:'🌼', name:'Cosmos',     seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black'] },
+        lily:       { emoji:'🌻', name:'Lily',       seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black'] },
+        hyacinth:   { emoji:'💐', name:'Hyacinth',   seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','blue','purple'] },
+        mum:        { emoji:'🌺', name:'Mum',        seeds:['red','white'],          colors:['red','white','pink','yellow','purple','green'] },
+        windflower: { emoji:'🌸', name:'Windflower', seeds:['red','white'],          colors:['red','white','pink','orange','blue','purple'] },
+    };
+
+    const CHEX = {
+        red:'#e83030',white:'#f5f5f5',yellow:'#f5d020',pink:'#f578b0',
+        orange:'#f58020',black:'#2a2a2a',purple:'#8030d8',blue:'#3888f0',
+        green:'#40bc50',gold:'#f0c010'
+    };
+    const C3 = {
+        red:0xe83030,white:0xf5f5f5,yellow:0xf5d020,pink:0xf578b0,
+        orange:0xf58020,black:0x2a2a2a,purple:0x8030d8,blue:0x3888f0,
+        green:0x40bc50,gold:0xf0c010
+    };
+    const SELL = { red:80,white:80,yellow:80,pink:220,orange:220,black:400,purple:600,blue:1200,green:2000,gold:2500 };
+
+    const STAGE_NAMES = ['🌱 Seed','🌿 Stem','🌸 Bud','🌺 Bloom'];
+
+    // Genetics
+    const GENES = {
+        rose: {
+            'red+red':['black'],'red+white':['pink'],'white+white':['purple'],
+            'pink+pink':['pink','white'],'pink+red':['pink','red'],
+            'pink+white':['pink','white'],'black+red':['purple'],
+            'pink+orange':['orange'],'red+yellow':['orange'],
+            'purple+white':['blue'],'orange+purple':['blue'],
+        },
+        tulip: {
+            'red+yellow':['orange'],'red+white':['pink'],'red+red':['black'],
+            'orange+orange':['black'],'black+red':['purple'],'yellow+yellow':['yellow'],
+            'pink+white':['white'],'pink+pink':['pink'],'purple+yellow':['purple'],
+        },
+        pansy: {
+            'red+yellow':['orange'],'red+white':['blue'],'yellow+white':['blue'],
+            'blue+blue':['purple'],'orange+blue':['orange'],'purple+purple':['purple'],
+            'red+orange':['orange'],
+        },
+        cosmos: {
+            'red+yellow':['orange','red'],'red+white':['pink'],'orange+orange':['black'],
+            'orange+red':['orange'],'pink+orange':['orange'],'pink+pink':['pink'],
+            'black+black':['black'],
+        },
+        lily: {
+            'red+yellow':['orange'],'red+white':['pink'],'orange+orange':['orange'],
+            'pink+white':['white'],'red+red':['black'],'black+red':['black'],
+            'white+white':['white'],'pink+pink':['pink'],
+        },
+        hyacinth: {
+            'red+yellow':['orange'],'red+white':['pink'],'white+white':['blue'],
+            'blue+red':['purple'],'orange+orange':['orange'],'purple+yellow':['purple'],
+            'pink+pink':['pink'],'blue+blue':['blue'],
+        },
+        mum: {
+            'red+white':['pink'],'red+red':['purple'],'white+white':['purple'],
+            'pink+pink':['pink','yellow'],'pink+white':['pink','white'],
+            'purple+purple':['green'],'pink+red':['purple'],'yellow+yellow':['yellow'],
+        },
+        windflower: {
+            'red+white':['pink'],'red+red':['orange'],'white+white':['blue'],
+            'blue+red':['purple'],'orange+orange':['orange'],'pink+white':['pink'],
+            'blue+blue':['blue'],'orange+pink':['orange'],
+        },
+    };
+
+    /* ═══════════════════════════════════════════════
+       APP STATE
+    ═══════════════════════════════════════════════ */
+    let mode        = 'idle';
+    let selFlower   = null;
+    let movFlower   = null;
+    let plantType   = 'rose';
+    let plantColor  = 'red';
+    let bells       = parseInt(localStorage.getItem('t_bells') || '1000');
+    let gardenGrid  = new Map();
+    let fMeshes     = [];
+    let mesh2f      = new Map();
+    let growMult    = 1.0;
+    let wType       = 'clear';
+    let wLat        = 37.35, wLon = -121.95;
+
+    const GROW_BASE = 100 / (48 * 3600 * 1000);
+    const MATURE = 100, BREED = 200;
+    // ── FIXED: PLANT_R now matches visible island boundary ──
+    const PLANT_R = 9.0, ISLAND_R = 9.5;
+
+    /* ═══════════════════════════════════════════════
+       THREE.JS SCENE
+    ═══════════════════════════════════════════════ */
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.013);
+
+    const camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 500);
+    camera.position.set(0, 17, 27);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true, canvas:document.getElementById('canvas') });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.enableRotate = false;
+    controls.enablePan    = false;
+    controls.minDistance  = 8;
+    controls.maxDistance  = 50;
+    controls.target.set(0, 1, 0);
+
+    /* Lights */
+    const ambL = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambL);
+    const dirL = new THREE.DirectionalLight(0xfffacd, 0.9);
+    dirL.position.set(-3, 22, 10);
+    dirL.castShadow = true;
+    dirL.shadow.mapSize.setScalar(2048);
+    dirL.shadow.camera.left = -16; dirL.shadow.camera.right  =  16;
+    dirL.shadow.camera.top  =  16; dirL.shadow.camera.bottom = -16;
+    dirL.shadow.camera.far  = 60;
+    scene.add(dirL);
+    const fillL = new THREE.DirectionalLight(0xd0e8ff, 0.25);
+    fillL.position.set(5, 3, -8); scene.add(fillL);
+    const ltgL = new THREE.PointLight(0xe0e0ff, 0, 60);
+    ltgL.position.set(0, 18, 0); scene.add(ltgL);
+    const moonL = new THREE.DirectionalLight(0x8899cc, 0);
+    moonL.position.set(5, 20, -5); scene.add(moonL);
+
+    /* ═══════════════════════════════════════════════
+       ISLAND ENVIRONMENT
+    ═══════════════════════════════════════════════ */
+    const dirtMat  = new THREE.MeshPhongMaterial({ color:0x7a5530 });
+    const grassMat = new THREE.MeshPhongMaterial({ color:0x7BC67E });
+
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(ISLAND_R, ISLAND_R-1, 3.5, 64), dirtMat);
+    base.position.y = -1.75; base.receiveShadow = true; scene.add(base);
+
+    const grass = new THREE.Mesh(new THREE.CylinderGeometry(ISLAND_R, ISLAND_R, 0.45, 64), grassMat);
+    grass.position.y = 0.22; grass.receiveShadow = true; scene.add(grass);
+
+    const domeMat = new THREE.MeshPhongMaterial({
+        color:0xc8e8ff, transparent:true, opacity:0.07, shininess:150, side:THREE.DoubleSide
+    });
+    const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(ISLAND_R+0.5, 32, 32, 0, Math.PI*2, 0, Math.PI/2), domeMat);
+    dome.position.y = 0.45; scene.add(dome);
+
+    /* Grid Texture — now matches PLANT_R = 9.0 */
+    let gridDisc, gridDimDisc;
+    (function buildGrid() {
+        function makeGridTex(lineAlpha, zoneAlpha) {
+            const S = 1024, R = ISLAND_R, PR = PLANT_R;
+            const cv = document.createElement('canvas'); cv.width = cv.height = S;
+            const ctx = cv.getContext('2d');
+            ctx.strokeStyle = `rgba(255,255,255,${lineAlpha * 0.3})`; ctx.lineWidth = 1.5;
+            for (let k = Math.ceil(-R); k <= Math.floor(R); k++) {
+                const cx = (k + R) / (2*R) * S;
+                ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, S); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, cx); ctx.lineTo(S, cx); ctx.stroke();
+            }
+            ctx.strokeStyle = `rgba(255,255,200,${zoneAlpha})`; ctx.lineWidth = 2.5;
+            for (let k = Math.ceil(-PR); k <= Math.floor(PR); k++) {
+                const h = Math.sqrt(Math.max(0, PR*PR - k*k));
+                const cx = (k + R) / (2*R) * S;
+                const c0 = (-h + R) / (2*R) * S, c1 = (h + R) / (2*R) * S;
+                ctx.beginPath(); ctx.moveTo(cx, c0); ctx.lineTo(cx, c1); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(c0, cx); ctx.lineTo(c1, cx); ctx.stroke();
+            }
+            ctx.strokeStyle = `rgba(255,220,100,${zoneAlpha * 0.8})`; ctx.lineWidth = 4; ctx.setLineDash([14,9]);
+            ctx.beginPath(); ctx.arc(S/2, S/2, PR/(2*R)*S, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+            return new THREE.CanvasTexture(cv);
+        }
+        const mkDisc = (tex, opacity) => {
+            const d = new THREE.Mesh(
+                new THREE.CircleGeometry(ISLAND_R, 64),
+                new THREE.MeshBasicMaterial({ map:tex, transparent:true, opacity, depthWrite:false })
+            );
+            d.rotation.x = -Math.PI/2; d.position.y = 0.43; scene.add(d); return d;
+        };
+        gridDimDisc = mkDisc(makeGridTex(0.5, 0.18), 1);
+        gridDisc    = mkDisc(makeGridTex(1.0, 0.95), 0);
+    })();
+
+    const cellCursor = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.88, 0.88),
+        new THREE.MeshBasicMaterial({ color:0x88ff88, transparent:true, opacity:0, depthWrite:false })
+    );
+    cellCursor.rotation.x = -Math.PI/2; cellCursor.position.y = 0.44; scene.add(cellCursor);
+
+    /* ═══════════════════════════════════════════════
+       PARTICLES
+    ═══════════════════════════════════════════════ */
+    function mkPts(color, size, n) {
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(n * 3);
+        for (let i=0; i<n*3; i+=3) { pos[i]=(Math.random()-.5)*30; pos[i+1]=Math.random()*22; pos[i+2]=(Math.random()-.5)*30; }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const mat = new THREE.PointsMaterial({ color, size, transparent:true, opacity:0, depthWrite:false });
+        const pts = new THREE.Points(geo, mat); scene.add(pts);
+        return { pts, pos, mat, n };
+    }
+    const RAIN = mkPts(0x88aaff, 0.09, 1800);
+    const SNOW = mkPts(0xeef4ff, 0.13, 900);
+
+    const cloudGrp = new THREE.Group();
+    const cloudMat = new THREE.MeshPhongMaterial({ color:0xffffff, transparent:true, opacity:0, flatShading:true });
+    for (let i=0; i<14; i++) {
+        const c = new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*1.8, 7, 7), cloudMat);
+        c.position.set((Math.random()-.5)*35, 11+Math.random()*6, (Math.random()-.5)*35);
+        c.scale.set(1, 0.5, 1); cloudGrp.add(c);
+    }
+    scene.add(cloudGrp);
+
+    /* ═══════════════════════════════════════════════
+       WEATHER STATES
+    ═══════════════════════════════════════════════ */
+    const WSTATE = {
+        clear:  { name:'Clear Sky',   icon:'☀️',  sky:0x87CEEB, dirt:0x8B5A2B, grass:0x7BC67E, fog:0.012, rain:0,   snow:0,   cloud:0.08, mult:1.0,  ambMul:1.0,  dirMul:1.0,  growth:'Slow growth (2 days)'  },
+        cloudy: { name:'Cloudy',      icon:'⛅',  sky:0x90A4AE, dirt:0x6e4a2d, grass:0x6E9A6F, fog:0.018, rain:0,   snow:0,   cloud:0.85, mult:1.33, ambMul:0.75, dirMul:0.45, growth:'Moderate (1.5 days)'   },
+        rain:   { name:'Raining',     icon:'🌧️', sky:0x546E7A, dirt:0x4E342E, grass:0x5B805C, fog:0.028, rain:0.6, snow:0,   cloud:0.92, mult:2.0,  ambMul:0.6,  dirMul:0.2,  growth:'Boosted (1 day!)'      },
+        snow:   { name:'Snowing',     icon:'❄️',  sky:0xCFD8DC, dirt:0x888888, grass:0xECEFF1, fog:0.035, rain:0,   snow:0.8, cloud:0.7,  mult:0.5,  ambMul:0.75, dirMul:0.35, growth:'Frozen — slow growth'  },
+        storm:  { name:'Thunderstorm',icon:'⛈️', sky:0x1C2833, dirt:0x3E2723, grass:0x3d5c3d, fog:0.038, rain:0.9, snow:0,   cloud:1.0,  mult:3.0,  ambMul:0.3,  dirMul:0.08, growth:'⚡ MAX growth speed!'  },
+    };
+
+    /* ═══════════════════════════════════════════════
+       TIME OF DAY
+    ═══════════════════════════════════════════════ */
+    const TIME_KF = [
+        { h:0,  sky:0x03060f, amb:0.12, sunI:0,    sunC:0x334488, sunX:0,   sunY:5,  moonI:0.3  },
+        { h:4,  sky:0x06091a, amb:0.1,  sunI:0,    sunC:0x334488, sunX:-16, sunY:3,  moonI:0.4  },
+        { h:5,  sky:0x1a0a28, amb:0.15, sunI:0,    sunC:0x334488, sunX:-16, sunY:2,  moonI:0.2  },
+        { h:6,  sky:0xc85030, amb:0.28, sunI:0.12, sunC:0xff7733, sunX:-15, sunY:4,  moonI:0    },
+        { h:7,  sky:0xffa060, amb:0.42, sunI:0.42, sunC:0xffcc88, sunX:-11, sunY:11, moonI:0    },
+        { h:9,  sky:0x87CEEB, amb:0.58, sunI:0.82, sunC:0xffffff, sunX:-5,  sunY:20, moonI:0    },
+        { h:12, sky:0x5aaddf, amb:0.65, sunI:1.0,  sunC:0xffffff, sunX:0,   sunY:28, moonI:0    },
+        { h:15, sky:0x87CEEB, amb:0.6,  sunI:0.85, sunC:0xfffbee, sunX:5,   sunY:20, moonI:0    },
+        { h:17, sky:0x7ab8d8, amb:0.52, sunI:0.65, sunC:0xffe8aa, sunX:11,  sunY:14, moonI:0    },
+        { h:18, sky:0xff9933, amb:0.42, sunI:0.4,  sunC:0xff8833, sunX:14,  sunY:7,  moonI:0    },
+        { h:19, sky:0xc84422, amb:0.28, sunI:0.12, sunC:0xff5522, sunX:15,  sunY:3,  moonI:0.1  },
+        { h:20, sky:0x3a1450, amb:0.18, sunI:0,    sunC:0x334488, sunX:15,  sunY:2,  moonI:0.25 },
+        { h:22, sky:0x03060f, amb:0.12, sunI:0,    sunC:0x334488, sunX:0,   sunY:5,  moonI:0.35 },
+        { h:24, sky:0x03060f, amb:0.12, sunI:0,    sunC:0x334488, sunX:0,   sunY:5,  moonI:0.3  },
+    ];
+
+    function getTimeEnv() {
+        const hour = new Date().getHours() + new Date().getMinutes()/60;
+        let a = TIME_KF[0], b = TIME_KF[1];
+        for (let i = 0; i < TIME_KF.length-1; i++) {
+            if (hour >= TIME_KF[i].h && hour < TIME_KF[i+1].h) { a=TIME_KF[i]; b=TIME_KF[i+1]; break; }
+        }
+        const t = (a.h===b.h) ? 0 : (hour-a.h)/(b.h-a.h);
+        const lerp = (x,y) => x+(y-x)*t;
+        return {
+            sky:   new THREE.Color(a.sky).lerp(new THREE.Color(b.sky), t),
+            amb:   lerp(a.amb, b.amb),
+            sunI:  lerp(a.sunI, b.sunI),
+            sunC:  new THREE.Color(a.sunC).lerp(new THREE.Color(b.sunC), t),
+            sunX:  lerp(a.sunX, b.sunX),
+            sunY:  lerp(a.sunY, b.sunY),
+            moonI: lerp(a.moonI, b.moonI),
+        };
+    }
+
+    const VT = {
+        sky:new THREE.Color(0x87CEEB), dirt:new THREE.Color(0x7a5530), grass:new THREE.Color(0x7BC67E),
+        fog:0.013, rain:0, snow:0, cloud:0, ambI:0.6, dirI:0.9, moonI:0,
+        sunPos:new THREE.Vector3(-3,22,10),
+    };
+    const L = 0.006;
+
+    function updateEnvTargets() {
+        const te = getTimeEnv(); const ws = WSTATE[wType];
+        const wSky = new THREE.Color(ws.sky);
+        const mixAmt = wType==='clear'?0 : wType==='cloudy'?0.3 : wType==='rain'?0.65 : wType==='snow'?0.4 : 0.85;
+        VT.sky.copy(te.sky.clone().lerp(wSky, mixAmt));
+        VT.dirt.setHex(ws.dirt); VT.grass.setHex(ws.grass);
+        VT.fog=ws.fog; VT.rain=ws.rain; VT.snow=ws.snow; VT.cloud=ws.cloud;
+        VT.ambI=te.amb*ws.ambMul; VT.dirI=te.sunI*ws.dirMul;
+        VT.moonI=te.moonI*(wType==='storm'?0.1:1);
+        VT.sunPos.set(te.sunX,te.sunY,10);
+    }
+
+    /* ═══════════════════════════════════════════════
+       CLOCK — updates every second
+    ═══════════════════════════════════════════════ */
+    function updateClock() {
+        const now = new Date();
+        let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        const el = document.getElementById('wtime');
+        if (el) el.textContent = `🕐 ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ampm}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    /* ═══════════════════════════════════════════════
+       WEATHER FETCH — fixed default city name
+    ═══════════════════════════════════════════════ */
+    async function initWeather() {
+        // ── FIXED: default is now "Couldn't fetch location" ──
+        let locationLabel = "Couldn't fetch location";
+        try {
+            const pos = await new Promise((res,rej) =>
+                navigator.geolocation
+                    ? navigator.geolocation.getCurrentPosition(res, rej, {timeout:7000})
+                    : rej(new Error('no geo'))
+            );
+            wLat = pos.coords.latitude; wLon = pos.coords.longitude;
+            try {
+                const r = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${wLat}&lon=${wLon}&format=json&zoom=10`,
+                    { headers:{'Accept-Language':'en'} }
+                );
+                const d = await r.json();
+                const city  = d.address?.city||d.address?.town||d.address?.village||'';
+                const state = d.address?.state_code||d.address?.state||'';
+                if (city) locationLabel = city + (state ? ', '+state : '');
+            } catch { /* keep default */ }
+        } catch { /* geolocation denied or unavailable */ }
+
+        document.getElementById('wloc').textContent = '📍 ' + locationLabel;
+        fetchWeather();
+    }
+
+    async function fetchWeather() {
+        try {
+            const r = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${wLat}&longitude=${wLon}` +
+                `&current=temperature_2m,weather_code,precipitation&temperature_unit=fahrenheit&timezone=auto`
+            );
+            const d = await r.json(); const cur = d.current;
+            const code = cur.weather_code, precip = cur.precipitation||0;
+            const temp = Math.round(cur.temperature_2m);
+            if      (code===0)                                               wType='clear';
+            else if (code<=3||code===45||code===48)                         wType='cloudy';
+            else if ((code>=51&&code<=67)||(code>=80&&code<=82)||precip>.3) wType='rain';
+            else if ((code>=71&&code<=77)||code>=85)                        wType='snow';
+            else if (code>=95)                                              wType='storm';
+            else                                                            wType='clear';
+            const ws = WSTATE[wType];
+            growMult = ws.mult;
+            document.getElementById('wicon').textContent = ws.icon;
+            document.getElementById('wtemp').textContent = temp + '°F';
+            document.getElementById('wcond').textContent = ws.name;
+            document.getElementById('wgrow').textContent = '🌿 ' + ws.growth;
+        } catch(e) { console.warn('Weather fail', e); }
+    }
+
+    initWeather(); setInterval(fetchWeather, 5*60*1000);
+
+    /* ═══════════════════════════════════════════════
+       GROWTH STAGE SYSTEM
+       Stage 0 = Seed  (0–33%)
+       Stage 1 = Stem  (33–66%)
+       Stage 2 = Bud   (66–100%)
+       Stage 3 = Bloom (100%+)
+    ═══════════════════════════════════════════════ */
+    function getStage(growth) {
+        if (growth < 33)  return 0;
+        if (growth < 66)  return 1;
+        if (growth < 100) return 2;
+        return 3;
+    }
+
+    /* Stage 0 – Seed: tiny green sprout poking from soil */
+    function mkSeedMesh(ghost=false) {
+        const op=ghost?0.5:1, tp=ghost;
+        const g = new THREE.Group();
+        const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:20});
+        // Soil mound
+        const mound = new THREE.Mesh(new THREE.SphereGeometry(0.18,8,6), SM(0x6b4a2a));
+        mound.scale.set(1,0.35,1); mound.position.y=0.06; g.add(mound);
+        // Sprout stem
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.028,0.18,6), SM(0x5aaa44));
+        stem.position.y=0.22; g.add(stem);
+        // Two tiny cotyledon leaves
+        for (let i=0;i<2;i++) {
+            const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.07,6,4), SM(0x66bb44));
+            leaf.scale.set(0.5,0.28,1.1);
+            leaf.position.set(i===0?0.07:-0.07, 0.32, 0);
+            leaf.rotation.z = i===0 ? -0.4 : 0.4;
+            g.add(leaf);
+        }
+        // Click hitbox
+        const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.5,8), new THREE.MeshBasicMaterial({visible:false}));
+        hb.position.y=0.25; g.add(hb);
+        return g;
+    }
+
+    /* Stage 1 – Stem: taller stem with proper leaves */
+    function mkStemMesh(color, ghost=false) {
+        const op=ghost?0.5:1, tp=ghost;
+        const g = new THREE.Group();
+        const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:20});
+        // Main stem
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.042,0.65,6), SM(0x44aa44));
+        stem.position.y=0.325; g.add(stem);
+        // Two leaves at mid-height
+        for (let i=0;i<2;i++) {
+            const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM(0x55bb44));
+            leaf.scale.set(0.36,0.16,1.15);
+            leaf.position.set(i===0?0.15:-0.15, 0.26, i===0?0.04:-0.04);
+            leaf.rotation.z = i===0 ? -0.5 : 0.5;
+            leaf.rotation.y = i===0 ? -0.25 : 0.25;
+            g.add(leaf);
+        }
+        // Small leaf higher up
+        const leaf2 = new THREE.Mesh(new THREE.SphereGeometry(0.10,6,4), SM(0x55bb44));
+        leaf2.scale.set(0.35,0.16,0.9); leaf2.position.set(0.12,0.48,0); leaf2.rotation.z=-0.3; g.add(leaf2);
+        // Hitbox
+        const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.75,8), new THREE.MeshBasicMaterial({visible:false}));
+        hb.position.y=0.35; g.add(hb);
+        return g;
+    }
+
+    /* Stage 2 – Bud: stem + leaves + tight closed bud in flower color */
+    function mkBudMesh(type, color, ghost=false) {
+        const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
+        const g = new THREE.Group();
+        const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:25,side:THREE.DoubleSide});
+        // Stem
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033,0.04,0.8,6), SM(0x44aa44));
+        stem.position.y=0.4; stem.castShadow=true; g.add(stem);
+        // Leaves
+        for (let i=0;i<2;i++) {
+            const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.15,7,5), SM(0x55bb44));
+            leaf.scale.set(0.36,0.16,1.15);
+            leaf.position.set(i===0?0.16:-0.16, 0.3, i===0?0.04:-0.04);
+            leaf.rotation.z = i===0?-0.5:0.5;
+            g.add(leaf);
+        }
+        // Bud (egg-shaped, in flower color)
+        const bud = new THREE.Mesh(new THREE.SphereGeometry(0.11,8,8), SM(hex));
+        bud.scale.set(1,1.55,1); bud.position.y=0.91; bud.castShadow=true; g.add(bud);
+        // Green sepals
+        for (let i=0;i<5;i++) {
+            const a=(i/5)*Math.PI*2;
+            const sepal = new THREE.Mesh(new THREE.SphereGeometry(0.06,5,4), SM(0x338833));
+            sepal.scale.set(0.45,1.1,0.55);
+            sepal.position.set(Math.cos(a)*0.08, 0.8, Math.sin(a)*0.08);
+            sepal.rotation.z=Math.cos(a)*0.45; sepal.rotation.x=Math.sin(a)*0.45;
+            g.add(sepal);
+        }
+        // Hitbox
+        const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,1.1,8), new THREE.MeshBasicMaterial({visible:false}));
+        hb.position.y=0.5; g.add(hb);
+        return g;
+    }
+
+    /* Stage 3 – Bloom: full detailed flower (8 distinct shapes) */
+    function mkBloomMesh(type, color, ghost=false) {
+        const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
+        const g = new THREE.Group();
+        const pM = (col) => new THREE.MeshPhongMaterial({color:col,shininess:25,side:THREE.DoubleSide,transparent:tp,opacity:op});
+        const PM=pM(hex), SM=pM(0x44aa44), CM=pM(0xddaa00);
+        const H=0.85;
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033,0.04,H,6),SM);
+        stem.position.y=H/2; stem.castShadow=true; g.add(stem);
+        const hy=H;
+
+        if (type==='rose') {
+            for (let r=0;r<3;r++) {
+                const n=5+r, rad=0.03+r*0.07;
+                for (let i=0;i<n;i++) {
+                    const a=(i/n)*Math.PI*2+r*0.3;
+                    const p=new THREE.Mesh(new THREE.SphereGeometry(0.07-r*.008,7,5),pM(new THREE.Color(hex).multiplyScalar(0.75+r*.12)));
+                    p.scale.set(1,.55,.9); p.position.set(Math.cos(a)*rad,hy+r*.028,Math.sin(a)*rad); p.castShadow=true; g.add(p);
+                }
+            }
+            const c=new THREE.Mesh(new THREE.SphereGeometry(0.04,8,8),pM(new THREE.Color(hex).multiplyScalar(0.5)));
+            c.position.y=hy+0.08; g.add(c);
+        }
+        else if (type==='tulip') {
+            for (let i=0;i<6;i++) {
+                const a=(i/6)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.12,8,6),PM);
+                p.scale.set(0.5,1.4,0.5);
+                p.position.set(Math.cos(a)*.07,hy+.12,Math.sin(a)*.07);
+                p.rotation.set(Math.cos(a)*.35,a,Math.sin(a)*.35); p.castShadow=true; g.add(p);
+            }
+        }
+        else if (type==='pansy') {
+            const pd=[
+                {a:Math.PI/2,s:0.17},{a:Math.PI/2+.75,s:0.15},{a:Math.PI/2-.75,s:0.15},
+                {a:-Math.PI/2+.5,s:0.14},{a:-Math.PI/2-.5,s:0.14},
+            ];
+            pd.forEach(({a,s})=>{
+                const p=new THREE.Mesh(new THREE.SphereGeometry(s,8,6),PM);
+                p.scale.set(1,.18,1.3); p.position.set(Math.cos(a)*s*.85,hy,Math.sin(a)*s*.85); p.castShadow=true; g.add(p);
+            });
+            const c=new THREE.Mesh(new THREE.SphereGeometry(.038,7,7),CM); c.position.y=hy+.02; g.add(c);
+        }
+        else if (type==='cosmos') {
+            for (let i=0;i<8;i++) {
+                const a=(i/8)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.PlaneGeometry(.11,.34),PM);
+                p.position.set(Math.cos(a)*.2,hy,Math.sin(a)*.2);
+                p.rotation.set(-Math.PI/2+.2,0,a-Math.PI/2); p.castShadow=true; g.add(p);
+            }
+            const c=new THREE.Mesh(new THREE.SphereGeometry(.065,8,8),CM); c.scale.set(1,.5,1); c.position.y=hy; g.add(c);
+        }
+        else if (type==='lily') {
+            for (let i=0;i<6;i++) {
+                const a=(i/6)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(.13,7,5),PM);
+                p.scale.set(.38,.14,1.9); p.position.set(Math.cos(a)*.16,hy-.04,Math.sin(a)*.16);
+                p.rotation.set(Math.sin(a)*.6,a,-Math.cos(a)*.6); p.castShadow=true; g.add(p);
+            }
+            for (let i=0;i<6;i++) {
+                const a=(i/6)*Math.PI*2;
+                const st=new THREE.Mesh(new THREE.CylinderGeometry(.007,.007,.22,4),SM);
+                st.position.set(Math.cos(a)*.06,hy+.1,Math.sin(a)*.06); st.rotation.set(Math.cos(a)*.4,0,Math.sin(a)*.4); g.add(st);
+                const tip=new THREE.Mesh(new THREE.SphereGeometry(.018,5,5),CM);
+                tip.position.set(Math.cos(a)*.1,hy+.19,Math.sin(a)*.1); g.add(tip);
+            }
+        }
+        else if (type==='hyacinth') {
+            for (let row=0;row<7;row++) {
+                const n=Math.max(3,7-row), rad=Math.max(0.01,0.1-row*.012);
+                for (let i=0;i<n;i++) {
+                    const a=(i/n)*Math.PI*2+row*.45;
+                    const b=new THREE.Mesh(new THREE.SphereGeometry(.048-.003*row,6,5),pM(new THREE.Color(hex).multiplyScalar(.7+.05*row)));
+                    b.position.set(Math.cos(a)*rad,hy+row*.085,Math.sin(a)*rad); g.add(b);
+                }
+            }
+        }
+        else if (type==='mum') {
+            for (let r=0;r<5;r++) {
+                const n=8+r*4, rad=r*.055+.01;
+                for (let i=0;i<n;i++) {
+                    const a=(i/n)*Math.PI*2+r*.28;
+                    const p=new THREE.Mesh(new THREE.SphereGeometry(.046-r*.003,5,4),
+                        pM(new THREE.Color(hex).multiplyScalar(.6+r*.1)));
+                    p.scale.set(.3,.22,1.65); p.position.set(Math.cos(a)*rad,hy+r*.016,Math.sin(a)*rad);
+                    p.rotation.y=-a; g.add(p);
+                }
+            }
+        }
+        else if (type==='windflower') {
+            for (let i=0;i<5;i++) {
+                const a=(i/5)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),PM);
+                p.scale.set(.88,.21,1.22); p.position.set(Math.cos(a)*.13,hy,Math.sin(a)*.13);
+                p.rotation.y=-a; p.castShadow=true; g.add(p);
+            }
+            const dkCol=new THREE.Color(hex).multiplyScalar(.28);
+            const ctr=new THREE.Mesh(new THREE.SphereGeometry(.06,8,8),pM(dkCol));
+            ctr.scale.set(1,.55,1); ctr.position.y=hy; g.add(ctr);
+            for (let i=0;i<7;i++) {
+                const a=(i/7)*Math.PI*2;
+                const st=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.1,4),pM(0xffffaa));
+                st.position.set(Math.cos(a)*.03,hy+.04,Math.sin(a)*.03); g.add(st);
+            }
+        }
+        // Hitbox for bloom too
+        const hb=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,1.2,8), new THREE.MeshBasicMaterial({visible:false}));
+        hb.position.y=0.6; g.add(hb);
+        return g;
+    }
+
+    /* Unified mesh factory — dispatches by stage */
+    function mkFlowerMesh(type, color, ghost=false, stage=3) {
+        if (stage===0) return mkSeedMesh(ghost);
+        if (stage===1) return mkStemMesh(color, ghost);
+        if (stage===2) return mkBudMesh(type, color, ghost);
+        return mkBloomMesh(type, color, ghost);
+    }
+
+    /* ═══════════════════════════════════════════════
+       GHOST PREVIEW
+    ═══════════════════════════════════════════════ */
+    const ghostGrp = new THREE.Group(); ghostGrp.visible=false; scene.add(ghostGrp);
+
+    function refreshGhost() {
+        while (ghostGrp.children.length) ghostGrp.remove(ghostGrp.children[0]);
+        if (mode==='moving' && movFlower) {
+            // Show at the moving flower's current stage
+            ghostGrp.add(mkFlowerMesh(movFlower.type, movFlower.color, true, movFlower.stage));
+        } else if (mode==='planting') {
+            // Always preview full bloom when planting
+            ghostGrp.add(mkFlowerMesh(plantType, plantColor, true, 3));
+        }
+        ghostGrp.scale.setScalar(0.85);
+    }
+
+    /* ═══════════════════════════════════════════════
+       GRID MANAGEMENT
+    ═══════════════════════════════════════════════ */
+    function placeFlower(type, color, gx, gz, growth=0) {
+        if (gardenGrid.has(`${gx},${gz}`)) return null;
+        if (Math.hypot(gx,gz) > PLANT_R)   return null;
+        const stage = getStage(growth);
+        const mesh  = mkFlowerMesh(type, color, false, stage);
+        mesh.position.set(gx, 0.4, gz);
+        scene.add(mesh);
+        const f = { type, color, gx, gz, growth, stage, mesh, off:Math.random()*10 };
+        gardenGrid.set(`${gx},${gz}`, f);
+        mesh.traverse(c=>{ if(c.isMesh){ fMeshes.push(c); mesh2f.set(c.uuid,f); }});
+        setScale(f);
+        return f;
+    }
+
+    function destroyFlower(f) {
+        _remRing(f); scene.remove(f.mesh);
+        f.mesh.traverse(c=>{ if(c.isMesh){ const i=fMeshes.indexOf(c); if(i>=0)fMeshes.splice(i,1); mesh2f.delete(c.uuid); }});
+        gardenGrid.delete(`${f.gx},${f.gz}`);
+    }
+
+    /* Rebuild mesh when growth stage changes */
+    function rebuildFlowerMesh(f) {
+        const newStage = getStage(f.growth);
+        if (f.stage === newStage) { setScale(f); return; }
+
+        const wasSelected = (f === selFlower);
+
+        // Unregister old mesh
+        f.mesh.traverse(c=>{ if(c.isMesh){ const i=fMeshes.indexOf(c); if(i>=0)fMeshes.splice(i,1); mesh2f.delete(c.uuid); }});
+        scene.remove(f.mesh);
+
+        // Build new mesh
+        f.stage = newStage;
+        f.mesh  = mkFlowerMesh(f.type, f.color, false, newStage);
+        f.mesh.position.set(f.gx, 0.4, f.gz);
+        scene.add(f.mesh);
+        f.mesh.traverse(c=>{ if(c.isMesh){ fMeshes.push(c); mesh2f.set(c.uuid,f); }});
+
+        // Re-attach selection ring
+        if (wasSelected) {
+            const ring=new THREE.Mesh(
+                new THREE.TorusGeometry(.42,.045,8,32),
+                new THREE.MeshBasicMaterial({color:0xffdd00})
+            );
+            ring.rotation.x=Math.PI/2; ring.position.y=0.04; ring.name='ring'; f.mesh.add(ring);
+        }
+        setScale(f);
+    }
+
+    function setScale(f) {
+        const stage = f.stage !== undefined ? f.stage : getStage(f.growth);
+        let s;
+        if      (stage===0) { s = 0.45 + (f.growth/33)*0.35; }
+        else if (stage===1) { s = 0.55 + ((f.growth-33)/33)*0.3; }
+        else if (stage===2) { s = 0.72 + ((f.growth-66)/34)*0.28; }
+        else                { s = 1.0; }
+        if (f === selFlower) s *= 1.08;
+        f.mesh.scale.setScalar(Math.max(0.1, s));
+    }
+
+    /* ═══════════════════════════════════════════════
+       STATE MACHINE
+    ═══════════════════════════════════════════════ */
+    function setMode(m) {
+        mode=m;
+        ghostGrp.visible=false;
+        cellCursor.visible=false;
+        gridDisc.material.opacity = (m==='planting'||m==='moving') ? 1 : 0;
+        if (m==='planting'||m==='moving') refreshGhost();
+        renderBar();
+    }
+
+    function enterPlant()  { desel(); setMode('planting'); toast('🌱 Click the grass to plant!'); }
+    function exitPlant()   { setMode('idle'); }
+
+    function selectFlower(f) {
+        if (selFlower) _remRing(selFlower);
+        selFlower=f;
+        const ring=new THREE.Mesh(
+            new THREE.TorusGeometry(.42,.045,8,32),
+            new THREE.MeshBasicMaterial({color:0xffdd00})
+        );
+        ring.rotation.x=Math.PI/2; ring.position.y=0.04; ring.name='ring'; f.mesh.add(ring);
+        setMode('selected');
+    }
+    function desel() { if(selFlower){_remRing(selFlower);selFlower=null;} if(mode==='selected')setMode('idle'); }
+    function _remRing(f) { const r=f.mesh.getObjectByName('ring'); if(r)f.mesh.remove(r); }
+
+    function sellFlower() {
+        if (!selFlower) return;
+        const val=SELL[selFlower.color]||80;
+        bells+=val; toast(`💰 Sold ${cap(selFlower.color)} ${FTYPES[selFlower.type].name} for ${val} 🔔!`);
+        destroyFlower(selFlower); selFlower=null; setMode('idle'); saveBells(); saveFlowers();
+    }
+    function removeFlower() {
+        if (!selFlower) return;
+        destroyFlower(selFlower); selFlower=null; setMode('idle'); saveFlowers();
+    }
+    function enterMove() {
+        if (!selFlower) return;
+        movFlower=selFlower; _remRing(movFlower);
+        gardenGrid.delete(`${movFlower.gx},${movFlower.gz}`);
+        movFlower.mesh.traverse(c=>{ if(c.isMesh&&c.material){c.material=c.material.clone();c.material.transparent=true;c.material.opacity=.4;}});
+        selFlower=null; setMode('moving'); toast('🔄 Click a new spot to place it!');
+    }
+    function cancelMove() {
+        if (!movFlower) return;
+        gardenGrid.set(`${movFlower.gx},${movFlower.gz}`,movFlower);
+        movFlower.mesh.traverse(c=>{ if(c.isMesh&&c.material){c.material.transparent=false;c.material.opacity=1;}});
+        movFlower=null; setMode('idle');
+    }
+    function confirmMove(gx,gz) {
+        if (!movFlower) return;
+        if (gardenGrid.has(`${gx},${gz}`)) { toast('That spot is taken!'); return; }
+        if (Math.hypot(gx,gz)>PLANT_R)     { toast("Can't plant outside the island!"); return; }
+        movFlower.gx=gx; movFlower.gz=gz;
+        movFlower.mesh.position.set(gx,.4,gz);
+        gardenGrid.set(`${gx},${gz}`,movFlower);
+        movFlower.mesh.traverse(c=>{ if(c.isMesh&&c.material){c.material.transparent=false;c.material.opacity=1;}});
+        movFlower=null; setMode('idle'); toast('🌸 Flower moved!'); saveFlowers();
+    }
+
+    function setPlantType(t)  { plantType=t; if(!FTYPES[t].seeds.includes(plantColor))plantColor=FTYPES[t].seeds[0]; renderBar(); refreshGhost(); }
+    function setPlantColor(c) { plantColor=c; renderBar(); refreshGhost(); }
+    function toggleSettings()  { const p=document.getElementById('spanel'); p.style.display=p.style.display==='none'?'block':'none'; }
+    function hideUI()          { toggleSettings(); document.body.classList.add('ui-off'); }
+    function clearAll() {
+        [...gardenGrid.values()].forEach(f=>destroyFlower(f));
+        gardenGrid.clear(); selFlower=null; movFlower=null; setMode('idle'); saveFlowers(); toast('All flowers cleared!');
+    }
+
+    /* ═══════════════════════════════════════════════
+       ACTION BAR
+    ═══════════════════════════════════════════════ */
+    function renderBar() {
+        const bar=document.getElementById('abar');
+        document.getElementById('bellsamt').textContent=bells.toLocaleString();
+
+        if (mode==='idle') {
+            bar.innerHTML=`<div class="arow"><button class="btn grn" onclick="enterPlant()">🌱 Plant Flowers</button></div>`;
+        }
+        else if (mode==='planting') {
+            const types=Object.entries(FTYPES).map(([k,v])=>
+                `<button class="tbtn${plantType===k?' on':''}" onclick="setPlantType('${k}')" title="${v.name}">
+              <span style="font-size:18px">${v.emoji}</span><span>${v.name}</span>
+            </button>`
+            ).join('');
+            const colors=(FTYPES[plantType]?.seeds||[]).map(c=>
+                `<button class="cdot${plantColor===c?' on':''}" style="background:${CHEX[c]}" onclick="setPlantColor('${c}')" title="${cap(c)}"></button>`
+            ).join('');
+            bar.innerHTML=`
+          <div class="ptag"><span style="font-size:18px">${FTYPES[plantType].emoji}</span> ${cap(plantColor)} ${FTYPES[plantType].name}</div>
+          <div class="tgrid">${types}</div>
+          <div class="crow">${colors}</div>
+          <div class="arow"><span class="mbadge">🌱 Click the grass to plant!</span><button class="btn red" onclick="exitPlant()">✕ Done</button></div>`;
+        }
+        else if (mode==='selected' && selFlower) {
+            const f=selFlower;
+            const pct=Math.min(100,Math.round(f.growth));
+            const stage=getStage(f.growth);
+            const val=SELL[f.color]||80;
+            const pips=[0,1,2,3].map(i=>`<span class="${i<=stage?'active':''}"></span>`).join('');
+            bar.innerHTML=`
+          <div class="srow">
+            <span style="font-size:22px">${FTYPES[f.type].emoji}</span>
+            <div style="flex:1">
+              <div class="sname">${cap(f.color)} ${FTYPES[f.type].name}</div>
+              <div class="sgrow">${STAGE_NAMES[stage]} &nbsp;·&nbsp; ${pct}%${pct>=100?' ✅':''}</div>
+              <div class="gbwrap"><div class="gb" style="width:${pct}%"></div></div>
+              <div class="stagepip">${pips}</div>
+            </div>
+            <div class="csm" style="background:${CHEX[f.color]}"></div>
+          </div>
+          <div class="arow">
+            <button class="btn gld" onclick="sellFlower()">💰 Sell (${val} 🔔)</button>
+            <button class="btn blu" onclick="enterMove()">🔄 Move</button>
+            <button class="btn red" onclick="removeFlower()">🗑️ Remove</button>
+            <button class="btn gry" onclick="desel()">✕</button>
+          </div>`;
+        }
+        else if (mode==='moving') {
+            bar.innerHTML=`<div class="arow"><span class="mbadge mv">🔄 Click new spot on island</span><button class="btn red" onclick="cancelMove()">✕ Cancel</button></div>`;
+        }
+    }
+
+    /* ═══════════════════════════════════════════════
+       INPUT
+    ═══════════════════════════════════════════════ */
+    const ray=new THREE.Raycaster();
+    const mouse=new THREE.Vector2();
+    let pdPos=null, pMoved=false;
+
+    renderer.domElement.addEventListener('pointerdown', e=>{ pdPos={x:e.clientX,y:e.clientY}; pMoved=false; });
+
+    renderer.domElement.addEventListener('pointermove', e=>{
+        if (pdPos&&Math.hypot(e.clientX-pdPos.x,e.clientY-pdPos.y)>5) pMoved=true;
+        if (mode==='planting'||mode==='moving') {
+            mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
+            ray.setFromCamera(mouse,camera);
+            const hits=ray.intersectObject(grass);
+            if (hits.length) {
+                const pt=hits[0].point, gx=Math.round(pt.x), gz=Math.round(pt.z);
+                const ok=!gardenGrid.has(`${gx},${gz}`)&&Math.hypot(gx,gz)<=PLANT_R;
+                ghostGrp.position.set(gx,.4,gz); ghostGrp.visible=true;
+                ghostGrp.traverse(c=>{ if(c.isMesh&&c.material) c.material.opacity=ok?0.65:0.2; });
+                cellCursor.position.set(gx,.44,gz); cellCursor.visible=true;
+                cellCursor.material.color.setHex(ok?0x66ff66:0xff4444);
+                cellCursor.material.opacity=ok?0.35:0.3;
+            } else { ghostGrp.visible=false; cellCursor.visible=false; }
+        }
+    });
+
+    renderer.domElement.addEventListener('pointerup', e=>{ if(!pMoved&&pdPos)handleClick(e); pdPos=null; pMoved=false; });
+    renderer.domElement.addEventListener('click', ()=>{
+        if (document.body.classList.contains('ui-off')) document.body.classList.remove('ui-off');
+    });
+
+    function handleClick(e) {
+        if (document.body.classList.contains('ui-off')) return;
+        mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
+        ray.setFromCamera(mouse,camera);
+
+        if (mode==='planting') {
+            const hits=ray.intersectObject(grass);
+            if (hits.length) {
+                const pt=hits[0].point, gx=Math.round(pt.x), gz=Math.round(pt.z);
+                if (placeFlower(plantType,plantColor,gx,gz)) { toast(`🌱 Planted ${cap(plantColor)} ${FTYPES[plantType].name}!`); saveFlowers(); }
+                else toast(gardenGrid.has(`${gx},${gz}`)?"There's already a flower here!":"Can't plant outside the island!");
+            }
+            return;
+        }
+        if (mode==='moving') {
+            const hits=ray.intersectObject(grass);
+            if (hits.length) { const pt=hits[0].point; confirmMove(Math.round(pt.x),Math.round(pt.z)); }
+            return;
+        }
+        // Try flower selection (hitboxes make any stage easy to click)
+        const fh=ray.intersectObjects(fMeshes);
+        if (fh.length) {
+            const f=mesh2f.get(fh[0].object.uuid);
+            if (f) { if(mode==='selected'&&selFlower===f)desel(); else selectFlower(f); return; }
+        }
+        if (mode==='selected') desel();
+    }
+
+    /* ═══════════════════════════════════════════════
+       GROWTH & BREEDING
+    ═══════════════════════════════════════════════ */
+    let lastGrowth=Date.now();
+
+    function applyGrowth() {
+        const now=Date.now(), dt=Math.min(now-lastGrowth, 7*24*3600*1000);
+        lastGrowth=now;
+        const pts=dt*GROW_BASE*growMult;
+        gardenGrid.forEach(f=>{
+            if (f.growth<BREED) f.growth=Math.min(BREED, f.growth+pts);
+            rebuildFlowerMesh(f);  // handles stage transitions + scale
+            if (f.growth>=BREED) attemptBreed(f);
+        });
+        if (mode==='selected') renderBar();
+        saveFlowers();
+    }
+
+    function adjEmpty(gx,gz) {
+        const dirs=[[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]].sort(()=>Math.random()-.5);
+        for (const [dx,dz] of dirs) { const nx=gx+dx,nz=gz+dz; if(!gardenGrid.has(`${nx},${nz}`)&&Math.hypot(nx,nz)<=PLANT_R) return [nx,nz]; }
+        return null;
+    }
+
+    function attemptBreed(parent) {
+        const dirs=[[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
+        let partner=null;
+        for (const [dx,dz] of dirs) {
+            const n=gardenGrid.get(`${parent.gx+dx},${parent.gz+dz}`);
+            if (n&&n.growth>=BREED&&n.type===parent.type){partner=n;break;}
+        }
+        if (!partner) { parent.growth=BREED-1; return; }
+        const spot=adjEmpty(parent.gx,parent.gz)||adjEmpty(partner.gx,partner.gz);
+        if (!spot) { parent.growth=BREED-10; return; }
+        const key=[parent.color,partner.color].sort().join('+');
+        const gmap=GENES[parent.type]||{};
+        const opts=gmap[key]||[parent.color,partner.color];
+        const cc=opts[Math.floor(Math.random()*opts.length)];
+        const ct=Math.random()>.5?parent.type:partner.type;
+        if (placeFlower(ct,cc,spot[0],spot[1],0)) {
+            parent.growth=MATURE; partner.growth=MATURE;
+            toast(`✨ New ${cap(cc)} ${FTYPES[ct].name} bloomed!`); saveFlowers();
+        }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SAVE / LOAD
+    ═══════════════════════════════════════════════ */
+    function saveFlowers() {
+        localStorage.setItem('t2_flowers', JSON.stringify(
+            [...gardenGrid.values()].map(f=>({type:f.type,color:f.color,gx:f.gx,gz:f.gz,growth:f.growth}))
+        ));
+        localStorage.setItem('t2_lastSave', Date.now().toString());
+    }
+    function saveBells() { localStorage.setItem('t_bells', bells.toString()); }
+
+    function loadState() {
+        const raw=localStorage.getItem('t2_flowers');
+        if (raw) {
+            const lastSave=parseInt(localStorage.getItem('t2_lastSave')||'0');
+            const offMs=Math.min(Date.now()-lastSave, 7*24*3600*1000);
+            JSON.parse(raw).forEach(f=>{
+                const offGrowth=Math.min(BREED, f.growth+offMs*GROW_BASE*1.0);
+                placeFlower(f.type, f.color, f.gx, f.gz, offGrowth);
+            });
+            if (offMs>60000) toast(`🌿 ${Math.round(offMs/3600000*10)/10}h of growth applied!`);
+        } else {
+            placeFlower('rose','red',-2,0,100);
+            placeFlower('rose','white',-1,0,100);
+            placeFlower('tulip','yellow',1,1,50);
+            placeFlower('cosmos','red',0,2,30);
+        }
+    }
+
+    /* ═══════════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════════ */
+    function toast(msg) {
+        const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+        document.getElementById('tbox').appendChild(el);
+        setTimeout(()=>el.remove(), 3100);
+    }
+    function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    /* ═══════════════════════════════════════════════
+       RENDER LOOP
+    ═══════════════════════════════════════════════ */
+    let lastFT=performance.now(), ltTimer=0;
+    const sunPos=new THREE.Vector3();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const now=performance.now(), dt=Math.min((now-lastFT)/1000,.1), t=now*.001;
+        lastFT=now;
+
+        controls.update();
+        updateEnvTargets();
+
+        scene.background.lerp(VT.sky,L);
+        scene.fog.color.lerp(VT.sky,L);
+        dirtMat.color.lerp(VT.dirt,L*2);
+        grassMat.color.lerp(VT.grass,L*2);
+        ambL.intensity  +=(VT.ambI -ambL.intensity )*L*2;
+        dirL.intensity  +=(VT.dirI -dirL.intensity )*L*2;
+        moonL.intensity +=(VT.moonI-moonL.intensity)*L*2;
+        scene.fog.density+=(VT.fog-scene.fog.density)*L*2;
+        sunPos.lerp(VT.sunPos,L*2); dirL.position.copy(sunPos);
+
+        const nightAmt=Math.max(0,1-VT.dirI*2-VT.moonI*2);
+        ambL.color.setRGB(1-nightAmt*.35, 1-nightAmt*.25, 1-nightAmt*.05);
+
+        RAIN.mat.opacity+=(VT.rain-RAIN.mat.opacity)*L*2;
+        SNOW.mat.opacity+=(VT.snow-SNOW.mat.opacity)*L*2;
+        cloudMat.opacity+=(VT.cloud-cloudMat.opacity)*L*2;
+
+        if (RAIN.mat.opacity>.02) {
+            for(let i=1;i<RAIN.n*3;i+=3){ RAIN.pos[i]-=18*dt; if(RAIN.pos[i]<0)RAIN.pos[i]=22; }
+            RAIN.pts.geometry.attributes.position.needsUpdate=true;
+        }
+        if (SNOW.mat.opacity>.02) {
+            for(let i=0;i<SNOW.n*3;i+=3){ SNOW.pos[i+1]-=2.2*dt; SNOW.pos[i]+=Math.sin(t+SNOW.pos[i+2])*dt*.5; if(SNOW.pos[i+1]<0)SNOW.pos[i+1]=22; }
+            SNOW.pts.geometry.attributes.position.needsUpdate=true;
+        }
+        if (cloudMat.opacity>.02) cloudGrp.children.forEach(c=>{ c.position.x+=.7*dt; if(c.position.x>28)c.position.x=-28; });
+
+        // Lightning
+        if (wType==='storm') {
+            ltTimer-=dt; if(ltTimer<=0){ltgL.intensity=1.5+Math.random()*3;ltTimer=1.5+Math.random()*5;}
+            else ltgL.intensity=Math.max(0,ltgL.intensity-dt*12);
+        } else ltgL.intensity=0;
+
+        // Flower sway — all stages sway (subtler for seedlings)
+        gardenGrid.forEach(f=>{
+            if (!f.mesh) return;
+            const stage = f.stage !== undefined ? f.stage : getStage(f.growth);
+            if (stage>=1) {
+                const base=wType==='storm'?.14:wType==='rain'?.07:.04;
+                const str=base*(stage===1?0.4:stage===2?0.65:1.0);
+                f.mesh.rotation.z=Math.sin(t*1.5+f.off)*str;
+                f.mesh.rotation.x=Math.cos(t*1.2+f.off)*str*.7;
+            }
+        });
+
+        // Ghost pulse
+        if (ghostGrp.visible) ghostGrp.scale.setScalar(.85+Math.sin(t*4)*.025);
+
+        renderer.render(scene,camera);
+    }
+
+    window.addEventListener('resize',()=>{
+        camera.aspect=innerWidth/innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth,innerHeight);
+    });
+
+    /* ═══════════════════════════════════════════════
+       BOOT
+    ═══════════════════════════════════════════════ */
+    loadState();
+    renderBar();
+    setInterval(applyGrowth, 10000);
+    setInterval(saveBells, 30000);
+    animate();
+</script>
+</body>
+</html>
