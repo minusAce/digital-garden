@@ -78,7 +78,6 @@
         .cdot:hover:not(.on){transform:scale(1.1);}
 
         /* PREVIEW + STATUS */
-        .ptag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.6);border:1.5px dashed var(--border);border-radius:8px;font-size:11px;font-weight:800;color:var(--txt);margin-bottom:7px;}
         .mbadge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;background:#e8f5e9;color:#2e7d32;border:2px solid #81c784;white-space:nowrap;}
         .mbadge.mv{background:#e8f0fe;color:#1a237e;border-color:#7986cb;}
         .arow{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
@@ -151,7 +150,7 @@
     const FTYPES = {
         rose:       { emoji:'🌹', name:'Rose',       seeds:['red','white'],          colors:['red','white','pink','orange','black','purple','blue'] },
         tulip:      { emoji:'🌷', name:'Tulip',      seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black','purple'] },
-        pansy:      { emoji:'🪷', name:'Pansy',      seeds:['red','yellow','white'], colors:['red','yellow','white','orange','blue','purple'] },
+        pansy:      { emoji:'🏵️', name:'Pansy',      seeds:['red','yellow','white'], colors:['red','yellow','white','orange','blue','purple'] },
         cosmos:     { emoji:'🌼', name:'Cosmos',     seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black'] },
         lily:       { emoji:'🌻', name:'Lily',       seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black'] },
         hyacinth:   { emoji:'💐', name:'Hyacinth',   seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','blue','purple'] },
@@ -171,7 +170,7 @@
     };
     const SELL = { red:80,white:80,yellow:80,pink:220,orange:220,black:400,purple:600,blue:1200,green:2000,gold:2500 };
 
-    const STAGE_NAMES = ['🌱 Seed','🌿 Stem','🌸 Bud','🌺 Bloom'];
+    const STAGE_NAMES = ['🌱 Seed','🌿 Stem','❀ Bud','💐 Bloom'];
 
     // Genetics
     const GENES = {
@@ -1041,10 +1040,6 @@
         bells+=val; toast(`💰 Sold ${cap(selFlower.color)} ${FTYPES[selFlower.type].name} for ${val} 🔔!`);
         destroyFlower(selFlower); selFlower=null; setMode('idle'); saveBells(); saveFlowers();
     }
-    function removeFlower() {
-        if (!selFlower) return;
-        destroyFlower(selFlower); selFlower=null; setMode('idle'); saveFlowers();
-    }
     function enterMove() {
         if (!selFlower) return;
         movFlower=selFlower; _remRing(movFlower);
@@ -1098,7 +1093,6 @@
                 `<button class="cdot${plantColor===c?' on':''}" style="background:${CHEX[c]}" onclick="setPlantColor('${c}')" title="${cap(c)}"></button>`
             ).join('');
             bar.innerHTML=`
-          <div class="ptag"><span style="font-size:18px">${FTYPES[plantType].emoji}</span> ${cap(plantColor)} ${FTYPES[plantType].name}</div>
           <div class="tgrid">${types}</div>
           <div class="crow">${colors}</div>
           <div class="arow"><span class="mbadge">🌱 Click the grass to plant!</span><button class="btn red" onclick="exitPlant()">✕ Done</button></div>`;
@@ -1123,7 +1117,6 @@
           <div class="arow">
             <button class="btn gld" onclick="sellFlower()">💰 Sell (${val} 🔔)</button>
             <button class="btn blu" onclick="enterMove()">🔄 Move</button>
-            <button class="btn red" onclick="removeFlower()">🗑️ Remove</button>
             <button class="btn gry" onclick="desel()">✕</button>
           </div>`;
         }

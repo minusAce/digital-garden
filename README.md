@@ -1,11 +1,10 @@
 # Digital Terrarium
-Currently a WIP.
+Currently, a Work In Progress.
 
-Todo List
----------
+                Todo List
+-----------------------------------------
+ - Fix Stage 2 Plants to be more accurate 
  - Add Backgrounds
- - Add Animals
- - Fix Stage 2 Plants to be more accurate
- - Remove ptag
  - House
+ - Add Animals
  - Bouquets
