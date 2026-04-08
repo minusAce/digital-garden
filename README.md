@@ -7,3 +7,5 @@ Todo List
  - Add Animals
  - Fix Stage 2 Plants to be more accurate
  - Remove ptag
+ - House
+ - Bouquets
