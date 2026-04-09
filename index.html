@@ -94,9 +94,36 @@
         .stagepip span.active{background:var(--grn);}
 
         /* TOASTS */
-        #tbox{position:absolute;bottom:100px;left:16px;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:4px;z-index:20;}
-        .toast{background:var(--cream);border:2.5px solid var(--border);border-radius:11px;padding:7px 15px;font-weight:800;font-size:12px;color:var(--txt);animation:ta 3s forwards;}
-        @keyframes ta{0%{opacity:0;transform:translateY(8px)}12%{opacity:1;transform:translateY(0)}75%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
+        #tbox {
+            position: absolute;
+            top: 16px;              /* Changed from bottom: 100px */
+            right: 16px;            /* Changed from left: 16px */
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;  /* Aligns toasts to the right edge */
+            gap: 4px;
+            z-index: 20;
+        }
+
+        .toast {
+            background: var(--cream);
+            border: 2.5px solid var(--border);
+            border-radius: 11px;
+            padding: 7px 15px;
+            font-weight: 800;
+            font-size: 12px;
+            color: var(--txt);
+            animation: ta 3s forwards;
+            white-space: nowrap;    /* Prevents weird text wrapping on the right edge */
+        }
+
+        @keyframes ta {
+            0% { opacity: 0; transform: translateY(-8px); } /* Slide from above instead of below */
+            12% { opacity: 1; transform: translateY(0); }
+            75% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-6px); }
+        }
     </style>
 </head>
 <body>
@@ -148,14 +175,54 @@
        FLOWER DEFINITIONS
     ═══════════════════════════════════════════════ */
     const FTYPES = {
-        rose:       { emoji:'🌹', name:'Rose',       seeds:['red','white'],          colors:['red','white','pink','orange','black','purple','blue'] },
-        tulip:      { emoji:'🌷', name:'Tulip',      seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black','purple'] },
-        pansy:      { emoji:'🏵️', name:'Pansy',      seeds:['red','yellow','white'], colors:['red','yellow','white','orange','blue','purple'] },
-        cosmos:     { emoji:'🌼', name:'Cosmos',     seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black'] },
-        lily:       { emoji:'🌻', name:'Lily',       seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','black'] },
-        hyacinth:   { emoji:'💐', name:'Hyacinth',   seeds:['red','yellow','white'], colors:['red','yellow','white','pink','orange','blue','purple'] },
-        mum:        { emoji:'🌺', name:'Mum',        seeds:['red','white'],          colors:['red','white','pink','yellow','purple','green'] },
-        windflower: { emoji:'🌸', name:'Windflower', seeds:['red','white'],          colors:['red','white','pink','orange','blue','purple'] },
+        rose: {
+            emoji: '🌹',
+            name: 'Rose',
+            seeds: ['red', 'yellow', 'white'],
+            colors: ['red', 'white', 'yellow', 'pink', 'orange', 'black', 'purple', 'blue', 'gold']
+        },
+        tulip: {
+            emoji: '🌷',
+            name: 'Tulip',
+            seeds: ['red', 'yellow', 'white'],
+            colors: ['red', 'yellow', 'white', 'orange', 'pink', 'black', 'purple']
+        },
+        pansy: {
+            emoji: '🏵️',
+            name: 'Pansy',
+            seeds: ['red', 'yellow', 'white'],
+            colors: ['red', 'yellow', 'white', 'orange', 'blue', 'pink', 'black', 'purple']
+        },
+        cosmos: {
+            emoji: '🌼',
+            name: 'Cosmos',
+            seeds: ['red', 'yellow', 'white'],
+            colors: ['red', 'yellow', 'white', 'orange', 'pink', 'black']
+        },
+        lily: {
+            emoji: '🌻',
+            name: 'Lily',
+            seeds: ['red', 'yellow', 'white'],
+            colors: ['red', 'yellow', 'white', 'orange', 'pink', 'black']
+        },
+        hyacinth: {
+            emoji: '💐',
+            name: 'Hyacinth',
+            seeds: ['red', 'yellow', 'white'],
+            colors: ['red', 'yellow', 'white', 'orange', 'pink', 'blue', 'purple']
+        },
+        mum: {
+            emoji: '🌺',
+            name: 'Mum',
+            seeds: ['red', 'white'],
+            colors: ['red', 'white', 'pink', 'purple', 'green']
+        },
+        windflower: {
+            emoji: '🌸',
+            name: 'Windflower',
+            seeds: ['red', 'white'],
+            colors: ['red', 'white', 'pink', 'blue', 'purple']
+        },
     };
 
     const CHEX = {
@@ -168,54 +235,60 @@
         orange:0xf58020,black:0x2a2a2a,purple:0x8030d8,blue:0x3888f0,
         green:0x40bc50,gold:0xf0c010
     };
-    const SELL = { red:80,white:80,yellow:80,pink:220,orange:220,black:400,purple:600,blue:1200,green:2000,gold:2500 };
+    const SELL = { red:0,white:0,yellow:0,pink:100,orange:100,purple:200,blue:200,black:250,green:500,gold:500 };
 
     const STAGE_NAMES = ['🌱 Seed','🌿 Stem','❀ Bud','💐 Bloom'];
 
     // Genetics
     const GENES = {
         rose: {
-            'red+red':['black'],'red+white':['pink'],'white+white':['purple'],
-            'pink+pink':['pink','white'],'pink+red':['pink','red'],
-            'pink+white':['pink','white'],'black+red':['purple'],
-            'pink+orange':['orange'],'red+yellow':['orange'],
-            'purple+white':['blue'],'orange+purple':['blue'], 'black+black':['gold'],
+            'red+white':   { 'pink': 6, 'red': 2, 'white': 2 },
+            'red+yellow':  { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'red+red':     { 'black': 3, 'red': 7 },
+            'white+white': { 'purple': 4, 'white': 6 },
+            'pink+orange': { 'blue': 4, 'pink': 3, 'orange': 3 },
+            'black+black': { 'gold': 1, 'black': 9 } // Gold is extra rare!
         },
         tulip: {
-            'red+yellow':['orange'],'red+white':['pink'],'red+red':['black'],
-            'orange+orange':['black'],'black+red':['purple'],'yellow+yellow':['yellow'],
-            'pink+white':['white'],'pink+pink':['pink'],'purple+yellow':['purple'],
+            'red+yellow':    { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'red+white':     { 'pink': 6, 'red': 2, 'white': 2 },
+            'red+red':       { 'black': 3, 'red': 7 },
+            'orange+orange': { 'purple': 4, 'orange': 6 }
         },
         pansy: {
-            'red+yellow':['orange'],'red+white':['blue'],'yellow+white':['blue'],
-            'blue+blue':['purple'],'orange+blue':['orange'],'purple+purple':['purple'],
-            'red+orange':['orange'],
+            'red+yellow':  { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'white+white': { 'blue': 4, 'white': 6 },
+            'red+blue':    { 'pink': 6, 'red': 2, 'blue': 2 },
+            'orange+blue': { 'black': 2, 'orange': 4, 'blue': 4 },
+            'pink+pink':   { 'purple': 4, 'pink': 6 },
+            'black+black': { 'purple': 4, 'black': 6 }
         },
         cosmos: {
-            'red+yellow':['orange','red'],'red+white':['pink'],'orange+orange':['black'],
-            'orange+red':['orange'],'pink+orange':['orange'],'pink+pink':['pink'],
-            'black+black':['black'],
+            'red+yellow':    { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'red+white':     { 'pink': 6, 'red': 2, 'white': 2 },
+            'orange+orange': { 'black': 3, 'orange': 7 }
         },
         lily: {
-            'red+yellow':['orange'],'red+white':['pink'],'orange+orange':['orange'],
-            'pink+white':['white'],'red+red':['black'],'black+red':['black'],
-            'white+white':['white'],'pink+pink':['pink'],
+            'red+yellow': { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'red+white':  { 'pink': 6, 'red': 2, 'white': 2 },
+            'red+red':    { 'black': 3, 'red': 7 }
         },
         hyacinth: {
-            'red+yellow':['orange'],'red+white':['pink'],'white+white':['blue'],
-            'blue+red':['purple'],'orange+orange':['orange'],'purple+yellow':['purple'],
-            'pink+pink':['pink'],'blue+blue':['blue'],
+            'red+yellow':    { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'red+white':     { 'pink': 6, 'red': 2, 'white': 2 },
+            'white+white':   { 'blue': 4, 'white': 6 },
+            'orange+orange': { 'purple': 4, 'orange': 6 }
         },
         mum: {
-            'red+white':['pink'],'red+red':['purple'],'white+white':['purple'],
-            'pink+pink':['pink','yellow'],'pink+white':['pink','white'],
-            'purple+purple':['green'],'pink+red':['purple'],'yellow+yellow':['yellow'],
+            'red+white':     { 'pink': 6, 'red': 2, 'white': 2 },
+            'white+white':   { 'purple': 4, 'white': 6 },
+            'purple+purple': { 'green': 1, 'purple': 9 }
         },
         windflower: {
-            'red+white':['pink'],'red+red':['orange'],'white+white':['blue'],
-            'blue+red':['purple'],'orange+orange':['orange'],'pink+white':['pink'],
-            'blue+blue':['blue'],'orange+pink':['orange'],
-        },
+            'red+white':   { 'pink': 6, 'red': 2, 'white': 2 },
+            'white+white': { 'blue': 4, 'white': 6 },
+            'blue+blue':   { 'purple': 4, 'blue': 6 }
+        }
     };
 
     /* ═══════════════════════════════════════════════
@@ -226,7 +299,7 @@
     let movFlower   = null;
     let plantType   = 'rose';
     let plantColor  = 'red';
-    let bells       = parseInt(localStorage.getItem('t_bells') || '1000');
+    let bells       = parseInt(localStorage.getItem('t_bells') || '500');
     let gardenGrid  = new Map();
     let fMeshes     = [];
     let mesh2f      = new Map();
@@ -235,6 +308,7 @@
     let wLat        = 37.35, wLon = -121.95;
 
     const GROW_BASE = 100 / (48 * 3600 * 1000);
+    // const GROW_BASE = 100 / 10;
     const MATURE = 100, BREED = 200;
     // ── FIXED: PLANT_R now matches visible island boundary ──
     const PLANT_R = 9.75, ISLAND_R = 9.75;
@@ -518,10 +592,10 @@
 
     /* ═══════════════════════════════════════════════
        GROWTH STAGE SYSTEM
-       Stage 0 = Seed  (0–33%)
-       Stage 1 = Stem  (33–66%)
-       Stage 2 = Bud   (66–100%)
-       Stage 3 = Bloom (100%+)
+       Stage 1 = Seed  (0–33%)
+       Stage 2 = Stem  (33–66%)
+       Stage 3 = Bud   (66–100%)
+       Stage 4 = Bloom (100%+)
     ═══════════════════════════════════════════════ */
     function getStage(growth) {
         if (growth < 33)  return 0;
@@ -555,26 +629,162 @@
         return g;
     }
 
-    /* Stage 2 – Stem: taller stem with proper leaves (type-aware) */
+    /* Stage 2 – Stem: taller stem with type-accurate leaves */
     function mkStemMesh(type, color, ghost=false) {
         const op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
         const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:20});
-        // Main stem
-        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.042,0.65,6), SM(0x44aa44));
-        stem.position.y=0.325; g.add(stem);
 
-        if (type==='hyacinth' || type==='tulip') {
-            // Strap-like leaves — wide and long
+        if (type==='tulip') {
+            // Tulip: two long strap-like upright leaves flanking a thin stem
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.035,0.7,6), SM(0x44aa44));
+            stem.position.y=0.35; g.add(stem);
             for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.18,7,5), SM(0x55bb44));
-                leaf.scale.set(0.25,0.14,1.7);
-                leaf.position.set(i===0?0.14:-0.14, 0.22, i===0?0.03:-0.03);
-                leaf.rotation.z = i===0 ? -0.38 : 0.38;
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.2,7,5), SM(0x55bb44));
+                leaf.scale.set(0.22,0.13,2.0);
+                leaf.position.set(i===0?0.15:-0.15, 0.28, i===0?0.04:-0.04);
+                leaf.rotation.z = i===0 ? -0.32 : 0.32;
                 g.add(leaf);
             }
-        } else {
-            // Standard leaves
+        }
+        else if (type==='hyacinth') {
+            // Hyacinth: thick strap leaves that curve outward from base
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.036,0.045,0.55,6), SM(0x3d9e3d));
+            stem.position.y=0.275; g.add(stem);
+            for (let i=0;i<3;i++) {
+                const a = (i/3)*Math.PI*2;
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.19,7,5), SM(0x55bb44));
+                leaf.scale.set(0.23,0.11,2.1);
+                leaf.position.set(Math.cos(a)*0.12, 0.18, Math.sin(a)*0.12);
+                leaf.rotation.z = Math.cos(a)*0.4;
+                leaf.rotation.x = Math.sin(a)*0.4;
+                g.add(leaf);
+            }
+        }
+        else if (type==='rose') {
+            // Rose: compound-looking paired leaves at two heights, darker green
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.030,0.038,0.72,6), SM(0x3d8c3d));
+            stem.position.y=0.36; g.add(stem);
+            // Lower pair of wider leaves
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.15,7,5), SM(0x4aaa3a));
+                leaf.scale.set(0.55,0.17,1.1);
+                leaf.position.set(i===0?0.17:-0.17, 0.22, i===0?0.04:-0.04);
+                leaf.rotation.z = i===0 ? -0.55 : 0.55;
+                leaf.rotation.y = i===0 ? -0.2 : 0.2;
+                g.add(leaf);
+            }
+            // Upper smaller pair
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.11,6,5), SM(0x4aaa3a));
+                leaf.scale.set(0.50,0.16,0.95);
+                leaf.position.set(i===0?0.14:-0.14, 0.48, i===0?0.03:-0.03);
+                leaf.rotation.z = i===0 ? -0.45 : 0.45;
+                g.add(leaf);
+            }
+        }
+        else if (type==='pansy') {
+            // Pansy: short stem, round lobed leaves that spread wide and low
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.036,0.5,6), SM(0x44aa44));
+            stem.position.y=0.25; g.add(stem);
+            // Broad rounded leaves at base
+            for (let i=0;i<3;i++) {
+                const a = (i/3)*Math.PI*2 + 0.3;
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.16,7,6), SM(0x55bb44));
+                leaf.scale.set(0.9,0.22,0.85);
+                leaf.position.set(Math.cos(a)*0.18, 0.18, Math.sin(a)*0.18);
+                leaf.rotation.z = Math.cos(a)*0.55;
+                leaf.rotation.x = Math.sin(a)*0.35;
+                g.add(leaf);
+            }
+            // One heart-shaped leaf higher
+            const tl = new THREE.Mesh(new THREE.SphereGeometry(0.13,7,6), SM(0x55bb44));
+            tl.scale.set(0.85,0.20,0.9); tl.position.set(0.13, 0.38, 0); tl.rotation.z=-0.4; g.add(tl);
+        }
+        else if (type==='cosmos') {
+            // Cosmos: thin wiry stem with feathery/pinnate fine leaves
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.020,0.028,0.75,6), SM(0x44aa44));
+            stem.position.y=0.375; g.add(stem);
+            // Feathery pinnate leaf clusters at two heights
+            const heights = [0.2, 0.42];
+            heights.forEach((h, hi) => {
+                for (let s=0;s<2;s++) {
+                    const sideX = s===0?0.09:-0.09;
+                    // Each cluster has 3 thin leaflets fanning out
+                    for (let l=0;l<3;l++) {
+                        const leaflet = new THREE.Mesh(new THREE.SphereGeometry(0.055,5,4), SM(0x55bb44));
+                        const angle = (l-1)*0.38 + (s===0?-0.15:0.15);
+                        leaflet.scale.set(0.2,0.12,1.05);
+                        leaflet.position.set(sideX + Math.cos(angle+Math.PI*s)*0.06, h + l*0.04, Math.sin(angle)*0.06);
+                        leaflet.rotation.z = s===0 ? -(0.55+l*0.15) : (0.55+l*0.15);
+                        leaflet.rotation.y = angle;
+                        g.add(leaflet);
+                    }
+                }
+            });
+        }
+        else if (type==='lily') {
+            // Lily: taller stem, broad lanceolate leaves angling outward at mid-height
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.030,0.040,0.80,6), SM(0x44aa44));
+            stem.position.y=0.40; g.add(stem);
+            // Whorled broad leaves
+            for (let i=0;i<4;i++) {
+                const a = (i/4)*Math.PI*2;
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM(0x55bb44));
+                leaf.scale.set(0.32,0.14,1.35);
+                leaf.position.set(Math.cos(a)*0.14, 0.32, Math.sin(a)*0.14);
+                leaf.rotation.z = Math.cos(a)*0.50;
+                leaf.rotation.x = Math.sin(a)*0.50;
+                g.add(leaf);
+            }
+            // Smaller upper pair
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.10,6,5), SM(0x55bb44));
+                leaf.scale.set(0.30,0.14,1.1);
+                leaf.position.set(i===0?0.12:-0.12, 0.58, 0);
+                leaf.rotation.z = i===0 ? -0.45 : 0.45;
+                g.add(leaf);
+            }
+        }
+        else if (type==='mum') {
+            // Mum: stem with multiple small lobed leaves along its length
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.030,0.038,0.70,6), SM(0x44aa44));
+            stem.position.y=0.35; g.add(stem);
+            const leafHeights = [0.18, 0.32, 0.50];
+            leafHeights.forEach((h, i) => {
+                for (let s=0;s<2;s++) {
+                    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12,7,6), SM(0x55bb44));
+                    leaf.scale.set(0.62,0.19,0.88);
+                    leaf.position.set(s===0?0.16:-0.16, h, s===0?0.03:-0.03);
+                    leaf.rotation.z = s===0 ? -0.52 : 0.52;
+                    // Alternate front/back slightly
+                    leaf.rotation.y = (i%2===0) ? (s===0?-0.3:0.3) : (s===0?0.3:-0.3);
+                    g.add(leaf);
+                }
+            });
+        }
+        else if (type==='windflower') {
+            // Windflower: stem with slightly heart-shaped/rounded spreading leaves
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.036,0.65,6), SM(0x44aa44));
+            stem.position.y=0.325; g.add(stem);
+            // Lower spreading trio of leaves
+            for (let i=0;i<3;i++) {
+                const a = (i/3)*Math.PI*2 + 0.5;
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,6), SM(0x55bb44));
+                leaf.scale.set(0.75,0.20,0.92);
+                leaf.position.set(Math.cos(a)*0.16, 0.20, Math.sin(a)*0.16);
+                leaf.rotation.z = Math.cos(a)*0.55;
+                leaf.rotation.x = Math.sin(a)*0.35;
+                g.add(leaf);
+            }
+            // One upper leaf
+            const ul = new THREE.Mesh(new THREE.SphereGeometry(0.11,6,5), SM(0x55bb44));
+            ul.scale.set(0.70,0.18,0.90); ul.position.set(0.12, 0.46, 0); ul.rotation.z=-0.4; g.add(ul);
+        }
+        else {
+            // Generic fallback
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.042,0.65,6), SM(0x44aa44));
+            stem.position.y=0.325; g.add(stem);
             for (let i=0;i<2;i++) {
                 const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM(0x55bb44));
                 leaf.scale.set(0.36,0.16,1.15);
@@ -583,7 +793,6 @@
                 leaf.rotation.y = i===0 ? -0.25 : 0.25;
                 g.add(leaf);
             }
-            // Small leaf higher up
             const leaf2 = new THREE.Mesh(new THREE.SphereGeometry(0.10,6,4), SM(0x55bb44));
             leaf2.scale.set(0.35,0.16,0.9); leaf2.position.set(0.12,0.48,0); leaf2.rotation.z=-0.3; g.add(leaf2);
         }
@@ -715,194 +924,260 @@
         return g;
     }
 
-    /* Stage 4 – Bloom: full detailed flower (8 distinct ACNH-accurate shapes) */
+    /* Stage 4 – Bloom: ACNH-accurate shapes for all 8 types */
     function mkBloomMesh(type, color, ghost=false) {
         const hex=C3[color]||0xffffff, op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
         const pM = (col) => new THREE.MeshPhongMaterial({color:col,shininess:30,side:THREE.DoubleSide,transparent:tp,opacity:op});
-        const SM=pM(0x44aa44), CM=pM(0xddaa00), WM=pM(0xeeeeee);
-        const H=0.88; const hy=H;
+        const SM=pM(0x44aa44), CM=pM(0xddaa00);
+        const H=0.88, hy=H;
         const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033,0.04,H,6),SM);
         stem.position.y=H/2; stem.castShadow=true; g.add(stem);
 
         if (type==='rose') {
-            // Classic layered rose: tight inner spiral, opening outer petals
-            // Outer stem leaves
+            // 4 rings of petals: inner tight spiral → outer fully open
             for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13,7,5), SM);
-                leaf.scale.set(0.38,0.15,1.2); leaf.position.set(i===0?0.14:-0.14,0.35,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5),SM);
+                leaf.scale.set(0.42,0.15,1.25); leaf.position.set(i===0?0.15:-0.15,0.35,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
             }
-            // 3 rings of petals forming a cupped rose
-            const ringConf = [{n:5,rad:0.0,sz:0.072,yOff:0,ySz:0.6,mul:0.65},{n:7,rad:0.09,sz:0.08,yOff:0.03,ySz:0.55,mul:0.8},{n:8,rad:0.18,sz:0.085,yOff:0.02,ySz:0.5,mul:1.0}];
-            ringConf.forEach(({n,rad,sz,yOff,ySz,mul},r)=>{
-                for (let i=0;i<n;i++) {
-                    const a=(i/n)*Math.PI*2+r*0.4;
-                    const p=new THREE.Mesh(new THREE.SphereGeometry(sz,8,6), pM(new THREE.Color(hex).multiplyScalar(mul)));
-                    p.scale.set(1,ySz,0.85); p.position.set(Math.cos(a)*rad,hy+yOff+r*0.032,Math.sin(a)*rad);
-                    p.rotation.set(Math.cos(a)*0.25,a,Math.sin(a)*0.25); p.castShadow=true; g.add(p);
-                }
-            });
-            // Center
-            const c=new THREE.Mesh(new THREE.SphereGeometry(0.04,8,8),pM(new THREE.Color(hex).multiplyScalar(0.55)));
-            c.position.y=hy+0.1; g.add(c);
+            for (let i=0;i<2;i++) {
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.10,6,5),SM);
+                leaf.scale.set(0.44,0.14,1.0); leaf.position.set(i===0?0.14:-0.14,0.22,i===0?0.06:-0.06); leaf.rotation.z=i===0?-0.6:0.6; g.add(leaf);
+            }
+            // Ring 0: tight inner core
+            for (let i=0;i<5;i++) {
+                const a=(i/5)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.058,7,6),pM(new THREE.Color(hex).multiplyScalar(0.55)));
+                p.scale.set(0.9,1.2,0.7); p.position.set(Math.cos(a)*0.02,hy+0.07,Math.sin(a)*0.02);
+                p.rotation.set(Math.cos(a)*0.2,a,Math.sin(a)*0.2); g.add(p);
+            }
+            // Ring 1: inner cup
+            for (let i=0;i<6;i++) {
+                const a=(i/6)*Math.PI*2+0.3;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.075,8,6),pM(new THREE.Color(hex).multiplyScalar(0.72)));
+                p.scale.set(1,0.85,0.8); p.position.set(Math.cos(a)*0.07,hy+0.045,Math.sin(a)*0.07);
+                p.rotation.set(Math.cos(a)*0.30,a,Math.sin(a)*0.30); p.castShadow=true; g.add(p);
+            }
+            // Ring 2: mid opening
+            for (let i=0;i<8;i++) {
+                const a=(i/8)*Math.PI*2+0.1;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.085,8,6),pM(new THREE.Color(hex).multiplyScalar(0.88)));
+                p.scale.set(1,0.72,0.82); p.position.set(Math.cos(a)*0.155,hy+0.015,Math.sin(a)*0.155);
+                p.rotation.set(Math.cos(a)*0.50,a,Math.sin(a)*0.50); p.castShadow=true; g.add(p);
+            }
+            // Ring 3: outer fully open, slightly drooping
+            for (let i=0;i<10;i++) {
+                const a=(i/10)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.088,8,6),pM(new THREE.Color(hex).multiplyScalar(1.0)));
+                p.scale.set(1,0.58,0.78); p.position.set(Math.cos(a)*0.24,hy-0.02,Math.sin(a)*0.24);
+                p.rotation.set(Math.cos(a)*0.72,a,Math.sin(a)*0.72); p.castShadow=true; g.add(p);
+            }
         }
         else if (type==='tulip') {
-            // Stem leaves (tulip has long strap-like leaves)
+            // Classic upright chalice — 3 inner + 3 outer petals
             for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.16,7,5), SM);
-                leaf.scale.set(0.28,0.14,1.45); leaf.position.set(i===0?0.15:-0.15,0.38,0); leaf.rotation.z=i===0?-0.4:0.4; g.add(leaf);
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.18,7,5),SM);
+                leaf.scale.set(0.24,0.13,1.9); leaf.position.set(i===0?0.16:-0.16,0.40,0); leaf.rotation.z=i===0?-0.35:0.35; g.add(leaf);
             }
-            // 6 cup-shaped petals forming classic tulip chalice
+            for (let i=0;i<3;i++) {
+                const a=(i/3)*Math.PI*2;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.13,8,7),pM(new THREE.Color(hex).multiplyScalar(0.85)));
+                p.scale.set(0.60,1.90,0.55);
+                p.position.set(Math.cos(a)*0.055,hy+0.18,Math.sin(a)*0.055);
+                p.rotation.set(Math.cos(a)*0.15,a,Math.sin(a)*0.15); p.castShadow=true; g.add(p);
+            }
+            for (let i=0;i<3;i++) {
+                const a=(i/3)*Math.PI*2+Math.PI/3;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.135,8,7),pM(hex));
+                p.scale.set(0.58,1.80,0.55);
+                p.position.set(Math.cos(a)*0.095,hy+0.14,Math.sin(a)*0.095);
+                p.rotation.set(Math.cos(a)*0.30,a,Math.sin(a)*0.30); p.castShadow=true; g.add(p);
+            }
             for (let i=0;i<6;i++) {
                 const a=(i/6)*Math.PI*2;
-                const inner=(i%2===0);
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.13,8,7), pM(inner ? new THREE.Color(hex).multiplyScalar(0.88) : new THREE.Color(hex)));
-                p.scale.set(0.52,1.55,0.52);
-                // Petals open upward in a cup — outer lean out slightly
-                const lean=inner?0.18:0.32;
-                p.position.set(Math.cos(a)*(0.06+lean*0.18),hy+0.14,Math.sin(a)*(0.06+lean*0.18));
-                p.rotation.set(Math.cos(a)*lean,a,Math.sin(a)*lean); p.castShadow=true; g.add(p);
+                const st=new THREE.Mesh(new THREE.CylinderGeometry(0.007,0.007,0.12,4),pM(0xffdd00));
+                st.position.set(Math.cos(a)*0.03,hy+0.30,Math.sin(a)*0.03); g.add(st);
             }
         }
         else if (type==='pansy') {
-            // Pansy: 5 rounded flat petals — 2 upper large, 3 lower (1 center, 2 side)
-            // Stem leaves
+            // 2 upper + 3 lower petals with prominent dark face markings
             for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,5), SM);
-                leaf.scale.set(0.9,0.18,0.9); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.6:0.6; g.add(leaf);
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.13,6,5),SM);
+                leaf.scale.set(0.85,0.19,0.88); leaf.position.set(i===0?0.14:-0.14,0.28,0); leaf.rotation.z=i===0?-0.6:0.6; g.add(leaf);
             }
-            const dark=pM(new THREE.Color(hex).multiplyScalar(0.35));
-            // Upper 2 large petals
             for (let i=0;i<2;i++) {
-                const a=Math.PI/2+(i===0?0.55:-0.55);
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.165,8,7),pM(hex));
-                p.scale.set(1,0.19,1.3); p.position.set(Math.cos(a)*0.14,hy+0.02,Math.sin(a)*0.14);
-                p.rotation.set(0.1,a-Math.PI/2,0); p.castShadow=true; g.add(p);
-            }
-            // Lower 3 petals
-            const lAngles=[-Math.PI/2, -Math.PI/2+0.75, -Math.PI/2-0.75];
-            lAngles.forEach(a=>{
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.155,8,7),pM(hex));
-                p.scale.set(1,0.18,1.25); p.position.set(Math.cos(a)*0.13,hy,Math.sin(a)*0.13);
+                const a=Math.PI/2+(i===0?0.52:-0.52);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.185,9,7),pM(hex));
+                p.scale.set(1.05,0.18,1.45); p.position.set(Math.cos(a)*0.15,hy+0.03,Math.sin(a)*0.15);
                 p.rotation.set(0.08,a-Math.PI/2,0); p.castShadow=true; g.add(p);
-            });
-            // Dark face markings (inner dark blotch)
-            for (let i=0;i<3;i++) {
-                const a=-Math.PI/2+(i-1)*0.5;
-                const m=new THREE.Mesh(new THREE.SphereGeometry(0.055,6,5),dark);
-                m.scale.set(1,0.16,0.9); m.position.set(Math.cos(a)*0.05,hy+0.01,Math.sin(a)*0.05); g.add(m);
             }
-            const c=new THREE.Mesh(new THREE.SphereGeometry(0.03,7,7),CM); c.position.y=hy+0.03; g.add(c);
+            const lowerAngles=[-Math.PI/2, -Math.PI/2+0.78, -Math.PI/2-0.78];
+            lowerAngles.forEach(a=>{
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.178,9,7),pM(hex));
+                p.scale.set(1.05,0.175,1.35); p.position.set(Math.cos(a)*0.13,hy-0.005,Math.sin(a)*0.13);
+                p.rotation.set(0.06,a-Math.PI/2,0); p.castShadow=true; g.add(p);
+            });
+            const dark=pM(new THREE.Color(hex).multiplyScalar(0.28));
+            for (let i=0;i<5;i++) {
+                const a=-Math.PI/2+(i-2)*0.42;
+                const m=new THREE.Mesh(new THREE.SphereGeometry(0.06,6,5),dark);
+                m.scale.set(0.55,0.14,1.15); m.position.set(Math.cos(a)*0.06,hy+0.005,Math.sin(a)*0.06);
+                m.rotation.set(0.05,a-Math.PI/2,0); g.add(m);
+            }
+            const c=new THREE.Mesh(new THREE.SphereGeometry(0.032,7,7),CM); c.position.y=hy+0.03; g.add(c);
         }
         else if (type==='cosmos') {
-            // Cosmos: 8 narrow oblong petals, prominent yellow button center
+            // 8 spoon/spatula-shaped petals with notched tips, raised yellow disc
             for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.11,6,5), SM);
-                leaf.scale.set(0.32,0.14,1.1); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.10,6,5),SM);
+                leaf.scale.set(0.28,0.13,1.0); leaf.position.set(i===0?0.12:-0.12,0.28,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
             }
             for (let i=0;i<8;i++) {
                 const a=(i/8)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.055,7,6),pM(hex));
-                p.scale.set(1,0.26,3.8); p.position.set(Math.cos(a)*0.2,hy-0.01,Math.sin(a)*0.2);
-                p.rotation.set(-0.18,a,0); p.castShadow=true; g.add(p);
+                const shaft=new THREE.Mesh(new THREE.SphereGeometry(0.048,7,6),pM(hex));
+                shaft.scale.set(0.55,0.22,3.0);
+                shaft.position.set(Math.cos(a)*0.18,hy,Math.sin(a)*0.18);
+                shaft.rotation.set(-0.12,a,0); shaft.castShadow=true; g.add(shaft);
+                const tip=new THREE.Mesh(new THREE.SphereGeometry(0.068,7,6),pM(new THREE.Color(hex).multiplyScalar(0.95)));
+                tip.scale.set(1.0,0.19,0.95);
+                tip.position.set(Math.cos(a)*0.33,hy-0.02,Math.sin(a)*0.33);
+                tip.rotation.set(0.12,a,0); g.add(tip);
+                const notch=new THREE.Mesh(new THREE.SphereGeometry(0.025,5,4),pM(new THREE.Color(hex).multiplyScalar(0.6)));
+                notch.scale.set(0.35,0.18,0.6);
+                notch.position.set(Math.cos(a)*0.35,hy-0.02,Math.sin(a)*0.35); g.add(notch);
             }
-            // Button center
-            const c=new THREE.Mesh(new THREE.SphereGeometry(0.075,10,8),pM(0xf5c300)); c.scale.set(1,0.55,1); c.position.y=hy+0.01; g.add(c);
-            // Tiny center dots
-            for (let i=0;i<6;i++) {
-                const a=(i/6)*Math.PI*2;
-                const d=new THREE.Mesh(new THREE.SphereGeometry(0.014,5,5),pM(0xcc8800));
-                d.position.set(Math.cos(a)*0.04,hy+0.03,Math.sin(a)*0.04); g.add(d);
+            const disc=new THREE.Mesh(new THREE.SphereGeometry(0.08,10,8),pM(0xf5c300));
+            disc.scale.set(1,0.65,1); disc.position.y=hy+0.035; g.add(disc);
+            for (let i=0;i<8;i++) {
+                const a=(i/8)*Math.PI*2;
+                const d=new THREE.Mesh(new THREE.SphereGeometry(0.016,5,5),pM(0xcc8800));
+                d.position.set(Math.cos(a)*0.045,hy+0.055,Math.sin(a)*0.045); g.add(d);
             }
         }
         else if (type==='lily') {
-            // Tiger/ACNH lily: 6 strongly reflexed/recurved petals with spots + prominent stamens
-            for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5), SM);
-                leaf.scale.set(0.33,0.14,1.3); leaf.position.set(i===0?0.15:-0.15,0.35,0); leaf.rotation.z=i===0?-0.45:0.45; g.add(leaf);
+            // 6 strongly recurved petals + very long stamens with colored anthers
+            for (let i=0;i<4;i++) {
+                const a=(i/4)*Math.PI*2;
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.13,7,5),SM);
+                leaf.scale.set(0.30,0.13,1.35);
+                leaf.position.set(Math.cos(a)*0.14,0.32,Math.sin(a)*0.14);
+                leaf.rotation.z=Math.cos(a)*0.48; leaf.rotation.x=Math.sin(a)*0.48; g.add(leaf);
             }
             for (let i=0;i<6;i++) {
                 const a=(i/6)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.14,8,6),pM(hex));
-                p.scale.set(0.36,0.14,2.1);
-                // Strongly recurved — tips sweep back
-                p.position.set(Math.cos(a)*0.18,hy-0.05,Math.sin(a)*0.18);
-                p.rotation.set(Math.sin(a)*-0.65,a,-Math.cos(a)*0.65); p.castShadow=true; g.add(p);
+                const base=new THREE.Mesh(new THREE.SphereGeometry(0.095,8,6),pM(hex));
+                base.scale.set(0.48,0.18,1.35);
+                base.position.set(Math.cos(a)*0.11,hy+0.04,Math.sin(a)*0.11);
+                base.rotation.set(Math.sin(a)*-0.45,a,-Math.cos(a)*0.45); base.castShadow=true; g.add(base);
+                const tip=new THREE.Mesh(new THREE.SphereGeometry(0.095,8,6),pM(hex));
+                tip.scale.set(0.44,0.165,1.45);
+                tip.position.set(Math.cos(a)*0.30,hy-0.08,Math.sin(a)*0.30);
+                tip.rotation.set(Math.sin(a)*0.85,a,-Math.cos(a)*0.85); tip.castShadow=true; g.add(tip);
             }
-            // Prominent stamens with anther tips
             for (let i=0;i<6;i++) {
                 const a=(i/6)*Math.PI*2;
-                const st=new THREE.Mesh(new THREE.CylinderGeometry(0.009,0.009,0.28,4),SM);
-                st.position.set(Math.cos(a)*0.07,hy+0.1,Math.sin(a)*0.07);
-                st.rotation.set(Math.cos(a)*0.4,0,Math.sin(a)*0.4); g.add(st);
-                const tip=new THREE.Mesh(new THREE.SphereGeometry(0.022,5,5),pM(0xcc4400));
-                tip.position.set(Math.cos(a)*0.12,hy+0.22,Math.sin(a)*0.12); g.add(tip);
+                const filament=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.008,0.42,4),SM);
+                filament.position.set(Math.cos(a)*0.05,hy+0.21,Math.sin(a)*0.05);
+                filament.rotation.set(Math.cos(a)*0.55,0,Math.sin(a)*0.55); g.add(filament);
+                const anther=new THREE.Mesh(new THREE.SphereGeometry(0.026,6,5),pM(0xcc4400));
+                anther.scale.set(0.8,0.6,2.2);
+                anther.position.set(Math.cos(a)*0.16,hy+0.34,Math.sin(a)*0.16);
+                anther.rotation.set(Math.cos(a)*0.55,0,Math.sin(a)*0.55); g.add(anther);
             }
-            // Pistil
-            const pistil=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.008,0.3,4),SM);
-            pistil.position.y=hy+0.15; g.add(pistil);
+            const pistil=new THREE.Mesh(new THREE.CylinderGeometry(0.010,0.010,0.38,4),SM);
+            pistil.position.y=hy+0.19; g.add(pistil);
+            const stigma=new THREE.Mesh(new THREE.SphereGeometry(0.022,6,6),SM);
+            stigma.position.y=hy+0.39; g.add(stigma);
         }
         else if (type==='hyacinth') {
-            // Dense columnar spike of tiny florets (ACNH hyacinth style)
-            for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.17,7,5), SM);
-                leaf.scale.set(0.25,0.14,1.5); leaf.position.set(i===0?0.15:-0.15,0.3,0); leaf.rotation.z=i===0?-0.35:0.35; g.add(leaf);
+            // Dense cylindrical spike — 10 rows of star-shaped florets, wider at base
+            for (let i=0;i<3;i++) {
+                const a=(i/3)*Math.PI*2;
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.20,7,5),SM);
+                leaf.scale.set(0.21,0.11,2.2);
+                leaf.position.set(Math.cos(a)*0.12,0.20,Math.sin(a)*0.12);
+                leaf.rotation.z=Math.cos(a)*0.36; leaf.rotation.x=Math.sin(a)*0.36; g.add(leaf);
             }
-            for (let row=0;row<9;row++) {
-                const n=Math.max(3,9-row), rad=Math.max(0.0,0.115-row*0.01);
+            for (let row=0;row<10;row++) {
+                const n=Math.max(4,10-row), rad=Math.max(0.01,0.13-row*0.012);
+                const yPos=hy+row*0.095;
                 for (let i=0;i<n;i++) {
-                    const a=(i/n)*Math.PI*2+row*0.42;
-                    const sz=0.052-0.003*row;
-                    const b=new THREE.Mesh(new THREE.SphereGeometry(sz,7,6),pM(new THREE.Color(hex).multiplyScalar(0.65+0.045*row)));
-                    b.scale.set(1,1.05,1);
-                    b.position.set(Math.cos(a)*rad,hy+row*0.09,Math.sin(a)*rad); b.castShadow=true; g.add(b);
+                    const a=(i/n)*Math.PI*2+row*0.45;
+                    const floretColor=new THREE.Color(hex).multiplyScalar(0.62+0.045*row);
+                    const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.028,6,5),pM(floretColor));
+                    ctr.position.set(Math.cos(a)*rad,yPos,Math.sin(a)*rad); g.add(ctr);
+                    for (let p=0;p<6;p++) {
+                        const pa=p/6*Math.PI*2;
+                        const petal=new THREE.Mesh(new THREE.SphereGeometry(0.018,5,4),pM(new THREE.Color(hex).multiplyScalar(0.70+0.04*row)));
+                        petal.scale.set(0.5,0.4,1.5);
+                        petal.position.set(Math.cos(a)*rad+Math.cos(pa)*0.038,yPos,Math.sin(a)*rad+Math.sin(pa)*0.038);
+                        petal.rotation.y=pa; g.add(petal);
+                    }
                 }
             }
         }
         else if (type==='mum') {
-            // Chrysanthemum: dense pompom of thin tubular petals radiating outward
+            // True dome-pompom: 7 concentric rings of quill petals curving upward
             for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13,7,5), SM);
-                leaf.scale.set(0.38,0.15,1.1); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.14,7,5),SM);
+                leaf.scale.set(0.40,0.15,1.15); leaf.position.set(i===0?0.14:-0.14,0.30,0); leaf.rotation.z=i===0?-0.52:0.52; g.add(leaf);
             }
-            for (let r=0;r<6;r++) {
-                const n=7+r*5, rad=r*0.052+0.005;
+            const rings=[
+                {n:6,  rad:0.0,   elev:0.38, lean:0.05},
+                {n:9,  rad:0.055, elev:0.32, lean:0.25},
+                {n:13, rad:0.11,  elev:0.22, lean:0.45},
+                {n:17, rad:0.165, elev:0.10, lean:0.62},
+                {n:20, rad:0.215, elev:0.0,  lean:0.78},
+                {n:22, rad:0.25,  elev:-0.08,lean:0.92},
+                {n:22, rad:0.27,  elev:-0.16,lean:1.05},
+            ];
+            rings.forEach(({n,rad,elev,lean},ri)=>{
                 for (let i=0;i<n;i++) {
-                    const a=(i/n)*Math.PI*2+r*0.3;
-                    const elev=Math.max(-0.06, 0.06-r*0.02);
-                    const p=new THREE.Mesh(new THREE.SphereGeometry(0.047-r*0.003,5,4),
-                        pM(new THREE.Color(hex).multiplyScalar(0.55+r*0.09)));
-                    p.scale.set(0.28,0.24,1.75); p.position.set(Math.cos(a)*rad,hy+elev,Math.sin(a)*rad);
-                    p.rotation.set(Math.cos(a)*0.15,-a,Math.sin(a)*0.15); g.add(p);
+                    const a=(i/n)*Math.PI*2+ri*0.28;
+                    const p=new THREE.Mesh(new THREE.SphereGeometry(0.046*(0.85+ri*0.022),5,4),
+                        pM(new THREE.Color(hex).multiplyScalar(0.52+ri*0.075)));
+                    p.scale.set(0.26,0.22,2.0);
+                    p.position.set(Math.cos(a)*rad,hy+elev,Math.sin(a)*rad);
+                    p.rotation.set(Math.cos(a)*lean,-a,Math.sin(a)*lean);
+                    p.castShadow=true; g.add(p);
                 }
-            }
-            // Tiny green center
-            const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6),SM); ctr.position.y=hy+0.04; g.add(ctr);
+            });
+            const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.028,6,6),pM(new THREE.Color(hex).multiplyScalar(0.5)));
+            ctr.position.y=hy+0.40; g.add(ctr);
         }
         else if (type==='windflower') {
-            // Anemone: 5 wide overlapping petals, very dark center with white stamens
-            for (let i=0;i<2;i++) {
-                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,5), SM);
-                leaf.scale.set(0.38,0.14,1.0); leaf.position.set(i===0?0.13:-0.13,0.3,0); leaf.rotation.z=i===0?-0.5:0.5; g.add(leaf);
+            // Anemone/poppy: 5+5 wide flat petals, large near-black center, dense white stamens
+            for (let i=0;i<3;i++) {
+                const a=(i/3)*Math.PI*2+0.5;
+                const leaf=new THREE.Mesh(new THREE.SphereGeometry(0.13,6,5),SM);
+                leaf.scale.set(0.75,0.19,0.90);
+                leaf.position.set(Math.cos(a)*0.16,0.26,Math.sin(a)*0.16);
+                leaf.rotation.z=Math.cos(a)*0.55; leaf.rotation.x=Math.sin(a)*0.35; g.add(leaf);
             }
             for (let i=0;i<5;i++) {
                 const a=(i/5)*Math.PI*2;
-                const p=new THREE.Mesh(new THREE.SphereGeometry(0.175,9,7),pM(hex));
-                p.scale.set(0.9,0.22,1.3); p.position.set(Math.cos(a)*0.15,hy+0.01,Math.sin(a)*0.15);
-                p.rotation.set(0.12,a,0); p.castShadow=true; g.add(p);
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.20,10,7),pM(hex));
+                p.scale.set(0.97,0.165,1.25);
+                p.position.set(Math.cos(a)*0.175,hy+0.005,Math.sin(a)*0.175);
+                p.rotation.set(0.06,a,0); p.castShadow=true; g.add(p);
             }
-            // Very dark (near-black) center button
-            const dkCol=new THREE.Color(hex).multiplyScalar(0.2);
-            const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.065,9,8),pM(dkCol));
-            ctr.scale.set(1,0.55,1); ctr.position.y=hy+0.01; g.add(ctr);
-            // White/cream stamens radiating from center
-            for (let i=0;i<8;i++) {
-                const a=(i/8)*Math.PI*2;
-                const st=new THREE.Mesh(new THREE.CylinderGeometry(0.007,0.007,0.1,4),pM(0xffffcc));
-                st.position.set(Math.cos(a)*0.035,hy+0.05,Math.sin(a)*0.035);
-                st.rotation.set(Math.cos(a)*0.3,0,Math.sin(a)*0.3); g.add(st);
-                const dot=new THREE.Mesh(new THREE.SphereGeometry(0.014,5,5),pM(0xffffaa));
-                dot.position.set(Math.cos(a)*0.045,hy+0.09,Math.sin(a)*0.045); g.add(dot);
+            for (let i=0;i<5;i++) {
+                const a=(i/5)*Math.PI*2+Math.PI/5;
+                const p=new THREE.Mesh(new THREE.SphereGeometry(0.155,9,7),pM(new THREE.Color(hex).multiplyScalar(0.92)));
+                p.scale.set(0.88,0.155,1.15);
+                p.position.set(Math.cos(a)*0.13,hy+0.003,Math.sin(a)*0.13);
+                p.rotation.set(0.06,a,0); g.add(p);
+            }
+            const dkCol=new THREE.Color(hex).multiplyScalar(0.18);
+            const ctr=new THREE.Mesh(new THREE.SphereGeometry(0.082,10,8),pM(dkCol));
+            ctr.scale.set(1,0.50,1); ctr.position.y=hy+0.012; g.add(ctr);
+            for (let i=0;i<14;i++) {
+                const a=(i/14)*Math.PI*2;
+                const st=new THREE.Mesh(new THREE.CylinderGeometry(0.006,0.006,0.095,4),pM(0xffffff));
+                st.position.set(Math.cos(a)*0.048,hy+0.055,Math.sin(a)*0.048);
+                st.rotation.set(Math.cos(a)*0.28,0,Math.sin(a)*0.28); g.add(st);
+                const dot=new THREE.Mesh(new THREE.SphereGeometry(0.013,5,5),pM(0xffffee));
+                dot.position.set(Math.cos(a)*0.055,hy+0.095,Math.sin(a)*0.055); g.add(dot);
             }
         }
         // Hitbox
@@ -1018,7 +1293,7 @@
         renderBar();
     }
 
-    function enterPlant()  { desel(); setMode('planting'); toast('🌱 Click the grass to plant!'); }
+    function enterPlant()  { desel(); setMode('planting'); }
     function exitPlant()   { setMode('idle'); }
 
     function selectFlower(f) {
@@ -1028,7 +1303,7 @@
             new THREE.TorusGeometry(.42,.045,8,32),
             new THREE.MeshBasicMaterial({color:0xffdd00})
         );
-        ring.rotation.x=Math.PI/2; ring.position.y=0.04; ring.name='ring'; f.mesh.add(ring);
+        ring.rotation.x=Math.PI/2; ring.position.y=0.06; ring.name='ring'; f.mesh.add(ring);
         setMode('selected');
     }
     function desel() { if(selFlower){_remRing(selFlower);selFlower=null;} if(mode==='selected')setMode('idle'); }
@@ -1036,9 +1311,16 @@
 
     function sellFlower() {
         if (!selFlower) return;
-        const val=SELL[selFlower.color]||80;
+        const val=SELL[selFlower.color];
         bells+=val; toast(`💰 Sold ${cap(selFlower.color)} ${FTYPES[selFlower.type].name} for ${val} 🔔!`);
+        updateBellUI();
         destroyFlower(selFlower); selFlower=null; setMode('idle'); saveBells(); saveFlowers();
+    }
+    function updateBellUI() {
+        const el = document.getElementById('bellsamt');
+        if (el) {
+            el.innerText = bells.toLocaleString(); // Adds commas like 1,000
+        }
     }
     function enterMove() {
         if (!selFlower) return;
@@ -1099,17 +1381,25 @@
         }
         else if (mode==='selected' && selFlower) {
             const f=selFlower;
-            const pct=Math.min(100,Math.round(f.growth));
             const stage=getStage(f.growth);
-            const val=SELL[f.color]||80;
+            const val=SELL[f.color];
             const pips=[0,1,2,3].map(i=>`<span class="${i<=stage?'active':''}"></span>`).join('');
+            // Two-phase bar: growing (0→MATURE) then breeding (MATURE→BREED)
+            const isFullyGrown = f.growth >= MATURE;
+            const barPct = isFullyGrown
+                ? Math.min(100, Math.round((f.growth - MATURE) / (BREED - MATURE) * 100))
+                : Math.min(100, Math.round(f.growth));
+            const barColor = isFullyGrown ? '#f578b0' : '#7BC67E';
+            const barLabel = isFullyGrown
+                ? `💞 Breeding ${barPct}%${barPct>=100?' 💞':''}`
+                : `${STAGE_NAMES[stage]} · ${barPct}%`;
             bar.innerHTML=`
           <div class="srow">
             <span style="font-size:22px">${FTYPES[f.type].emoji}</span>
             <div style="flex:1">
               <div class="sname">${cap(f.color)} ${FTYPES[f.type].name}</div>
-              <div class="sgrow">${STAGE_NAMES[stage]} &nbsp;·&nbsp; ${pct}%${pct>=100?' ✅':''}</div>
-              <div class="gbwrap"><div class="gb" style="width:${pct}%"></div></div>
+              <div class="sgrow">${barLabel}</div>
+              <div class="gbwrap"><div class="gb" style="width:${barPct}%;background:${barColor}"></div></div>
               <div class="stagepip">${pips}</div>
             </div>
             <div class="csm" style="background:${CHEX[f.color]}"></div>
@@ -1117,7 +1407,7 @@
           <div class="arow">
             <button class="btn gld" onclick="sellFlower()">💰 Sell (${val} 🔔)</button>
             <button class="btn blu" onclick="enterMove()">🔄 Move</button>
-            <button class="btn gry" onclick="desel()">✕</button>
+            <button class="btn red" onclick="desel()">✕</button>
           </div>`;
         }
         else if (mode==='moving') {
@@ -1173,12 +1463,32 @@
         mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
         ray.setFromCamera(mouse,camera);
 
-        if (mode==='planting') {
-            const hits=ray.intersectObject(rayPlane);
+        if (mode === 'planting') {
+            const hits = ray.intersectObject(rayPlane);
             if (hits.length) {
-                const pt=hits[0].point, gx=Math.round(pt.x), gz=Math.round(pt.z);
-                if (placeFlower(plantType,plantColor,gx,gz)) { toast(`🌱 Planted ${cap(plantColor)} ${FTYPES[plantType].name}!`); saveFlowers(); }
-                else toast(gardenGrid.has(`${gx},${gz}`)?"There's already a flower here!":"Can't plant outside the island!");
+                const pt = hits[0].point, gx = Math.round(pt.x), gz = Math.round(pt.z);
+
+                // 1. Check if the player can afford the 50 bell cost
+                const cost = 50;
+                if (bells < cost) {
+                    toast("You don't have enough bells to plant this! 💸");
+                    return;
+                }
+
+                // 2. Try to place the flower
+                if (placeFlower(plantType, plantColor, gx, gz)) {
+                    // 3. Deduct the bells only if placement was successful
+                    bells -= cost;
+
+                    toast(`🌱 Planted ${cap(plantColor)} ${FTYPES[plantType].name} (-${cost} 🔔)!`);
+                    updateBellUI();
+
+                    // 4. Save the new bell count and the garden state
+                    saveBells();
+                    saveFlowers();
+                } else {
+                    toast(gardenGrid.has(`${gx},${gz}`) ? "There's already a flower here!" : "Can't plant outside the island!");
+                }
             }
             return;
         }
@@ -1221,23 +1531,59 @@
     }
 
     function attemptBreed(parent) {
-        const dirs=[[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
-        let partner=null;
-        for (const [dx,dz] of dirs) {
-            const n=gardenGrid.get(`${parent.gx+dx},${parent.gz+dz}`);
-            if (n&&n.growth>=BREED&&n.type===parent.type){partner=n;break;}
-        }
-        if (!partner) { parent.growth=BREED-1; return; }
-        const spot=adjEmpty(parent.gx,parent.gz)||adjEmpty(partner.gx,partner.gz);
-        if (!spot) { parent.growth=BREED-10; return; }
-        const key=[parent.color,partner.color].sort().join('+');
-        const gmap=GENES[parent.type]||{};
-        const opts=gmap[key]||[parent.color,partner.color];
-        const cc=opts[Math.floor(Math.random()*opts.length)];
-        const ct=Math.random()>.5?parent.type:partner.type;
-        if (placeFlower(ct,cc,spot[0],spot[1],0)) {
-            parent.growth=MATURE; partner.growth=MATURE;
-            toast(`✨ New ${cap(cc)} ${FTYPES[ct].name} bloomed!`); saveFlowers();
+        // 1. Shuffle directions to ensure unbiased growth
+        const dirs = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]]
+            .sort(() => Math.random() - 0.5);
+
+        // 2. Iterate through neighbors
+        for (const [dx, dz] of dirs) {
+            const partner = gardenGrid.get(`${parent.gx + dx},${parent.gz + dz}`);
+
+            if (!partner || partner.growth < BREED || partner.type !== parent.type) {
+                continue;
+            }
+
+            // 3. Check for space
+            const spot = adjEmpty(parent.gx, parent.gz) || adjEmpty(partner.gx, partner.gz);
+            if (!spot) {
+                continue;
+            }
+
+            // 4. Get the weighted options for this pairing
+            const key = [parent.color, partner.color].sort().join('+');
+            const gmap = GENES[parent.type] || {};
+            const weightMap = gmap[key]; // This is now an object: { 'pink': 2, 'red': 4, ... }
+
+            // Logic check: ensure weightMap exists and has keys
+            if (!weightMap || Object.keys(weightMap).length === 0) {
+                continue;
+            }
+
+            // 5. WEIGHTED SELECTION LOGIC
+            const colors = Object.keys(weightMap);
+            const totalWeight = colors.reduce((sum, color) => sum + weightMap[color], 0);
+
+            let random = Math.random() * totalWeight;
+            let cc = colors[0]; // Fallback
+
+            for (const color of colors) {
+                if (random < weightMap[color]) {
+                    cc = color;
+                    break;
+                }
+                random -= weightMap[color];
+            }
+
+            // 6. Spawn the flower
+            if (placeFlower(parent.type, cc, spot[0], spot[1], 0)) {
+                parent.growth = MATURE;
+                partner.growth = MATURE;
+
+                toast(`✨ New ${cap(cc)} ${FTYPES[parent.type].name} bloomed!`);
+                saveFlowers();
+
+                return;
+            }
         }
     }
 
@@ -1363,8 +1709,9 @@
     ═══════════════════════════════════════════════ */
     loadState();
     renderBar();
-    setInterval(applyGrowth, 10000);
-    setInterval(saveBells, 30000);
+    setInterval(applyGrowth, 30000);
+    setInterval(saveFlowers, 10000);
+    setInterval(saveBells, 10000);
     animate();
 </script>
 </body>

@@ -1,9 +1,9 @@
-# Digital Terrarium
+# Digital Garden
 Currently, a Work In Progress.
 
-                Todo List
 -----------------------------------------
- - Fix Stage 2 Plants to be more accurate 
+            Todo List
+ - Improve Flower Stages Designs
  - Add Backgrounds
  - House
  - Add Animals
