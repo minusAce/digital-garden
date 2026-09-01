@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 Island Terrarium 🌸</title>
+    <title>🌸 My Island 🌸</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
     <script>
         window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -44,8 +45,8 @@
         #abar{width:100%;}
         #abar.panel{padding:13px 15px;}
 
-        /* BOTTOM RIGHT – Settings */
-        #sbtn{position:absolute;bottom:16px;right:16px;padding:9px 15px;font-size:14px;font-weight:800;color:var(--txt);cursor:pointer;}
+        /* TOP RIGHT – Settings */
+        #sbtn{position:absolute;top:16px;right:16px;padding:9px 15px;font-size:14px;font-weight:800;color:var(--txt);cursor:pointer;}
         #sbtn:hover{filter:brightness(1.04);}
         #spanel{position:absolute;bottom:66px;right:16px;padding:16px;width:255px;display:none;}
         .sl{font-size:10px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px;}
@@ -124,9 +125,166 @@
             75% { opacity: 1; }
             100% { opacity: 0; transform: translateY(-6px); }
         }
+
+        /* ═══ SHOP ═══ */
+        #brRow{position:absolute;bottom:16px;right:16px;display:flex;gap:10px;}
+        #shopbtn,#flogbtn{padding:9px 15px;font-size:14px;font-weight:800;color:var(--txt);cursor:pointer;white-space:nowrap;}
+        #shopwrap{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;pointer-events:auto;}
+        #shopwrap.open{display:flex;}
+        #shopbackdrop{position:absolute;inset:0;background:rgba(40,28,10,.38);backdrop-filter:blur(2px);}
+        #shoppanel{position:relative;width:min(560px,92vw);max-height:82vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+        #shophead{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 0;}
+        #shoptitle{font-size:18px;font-weight:900;color:var(--txt);}
+        #shopclose{cursor:pointer;font-weight:800;color:#a05a3a;font-size:13px;background:#fff0ea;border:2px solid #e8a888;border-radius:9px;padding:4px 10px;}
+        #shoptabs{display:flex;gap:6px;padding:12px 18px 0;}
+        .stab{flex:1;text-align:center;font-weight:800;font-size:12px;color:#8a7256;background:#fff8ee;border:2.5px solid #e8d8b8;border-radius:11px;padding:8px 6px;cursor:pointer;transition:all .12s;}
+        .stab.on{background:#fff0c0;border-color:#e8c84a;color:#7a5500;}
+        .stab:hover:not(.on){border-color:#d8b878;}
+        #shopbody{overflow-y:auto;padding:14px 18px 18px;display:flex;flex-direction:column;gap:9px;}
+        .sitem{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.6);border:2px solid #eaddc4;border-radius:13px;padding:9px 11px;}
+        .sicon{font-size:26px;width:38px;text-align:center;flex-shrink:0;}
+        .sinfo{flex:1;min-width:0;}
+        .sname2{font-size:13px;font-weight:900;color:var(--txt);}
+        .sdesc{font-size:10.5px;color:#96805f;font-weight:700;margin-top:1px;}
+        .sbuy{flex-shrink:0;min-width:78px;text-align:center;}
+        .sbuy.owned{background:#e8f5e9;color:#2e7d32;border-color:#81c784;cursor:default;}
+        .sbuy.owned:hover{transform:none;filter:none;}
+        .sbuy.locked{background:#eee;color:#999;border-color:#ccc;cursor:not-allowed;}
+        .sbuy.locked:hover{transform:none;filter:none;}
+        .shint{font-size:10.5px;color:#a08860;font-weight:700;text-align:center;padding:2px 0 6px;}
+        .cust{background:rgba(255,255,255,.5);border:2px dashed #d8c298;border-radius:12px;padding:10px 11px;margin-top:2px;}
+        .custlbl{font-size:10px;font-weight:800;color:#96805f;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+
+        /* ═══ FLOWER LOG ═══ */
+        #shopbtn:hover,#flogbtn:hover{filter:brightness(1.04);}
+        #flogwrap{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;pointer-events:auto;}
+        #flogwrap.open{display:flex;}
+        #flogbackdrop{position:absolute;inset:0;background:rgba(40,28,10,.38);backdrop-filter:blur(2px);}
+        #flogpanel{position:relative;width:min(620px,92vw);max-height:84vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+        #floghead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;flex-wrap:wrap;}
+        #flogtitle{font-size:18px;font-weight:900;color:var(--txt);}
+        #flogprogress{font-size:11px;font-weight:800;color:var(--dgrn);background:#eaf5ea;padding:4px 11px;border-radius:20px;}
+        #flogclose{cursor:pointer;font-weight:800;color:#a05a3a;font-size:13px;background:#fff0ea;border:2px solid #e8a888;border-radius:9px;padding:4px 10px;}
+        #flogbody{overflow-y:auto;padding:2px 18px 18px;}
+        .flsection{margin-bottom:13px;}
+        .flsectionhead{font-size:13px;font-weight:900;color:var(--txt);margin-bottom:6px;}
+        .flgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px;}
+        .flchip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:2px dashed #d8c9a8;border-radius:10px;padding:6px 9px;opacity:.6;}
+        .flchip.got{background:rgba(255,255,255,.8);border:2px solid #a8d8ac;opacity:1;}
+        .flswatch{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(0,0,0,.25);flex-shrink:0;}
+        .flname{font-size:10.5px;font-weight:800;color:var(--txt);flex:1;line-height:1.2;}
+        .flstatus{font-size:12px;flex-shrink:0;}
+
+        /* ═══ WELCOME HEART POPUP ═══ */
+        #welcome-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(40, 28, 10, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999; /* Highest z-index to sit on top of everything */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: opacity 0.4s ease;
+        }
+
+        .heart-box {
+            position: relative;
+            width: 510px;  /* Increased from 360px */
+            height: 490px; /* Increased from 340px (480 * 0.925) */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .heart-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: drop-shadow(0 12px 24px rgba(0,0,0,0.25));
+        }
+
+        .heart-content {
+            text-align: center;
+            color: #fff;
+            padding: 0 40px;
+             margin-top: -15px; /* Shifts content up into the wider part of the heart */
+        }
+
+        .heart-content h2 {
+            font-weight: 900;
+            font-size: 24px;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 5px rgba(224, 104, 126, 0.6);
+        }
+
+        .heart-content p {
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 3px rgba(224, 104, 126, 0.6);
+        }
+
+        .heart-close-btn {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 14px;
+            background: #fff;
+            color: #e0687e;
+            border: 3px solid #ffd0cc;
+            border-radius: 12px;
+            padding: 8px 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.15s, filter 0.15s;
+        }
+
+        .heart-close-btn:hover {
+            transform: scale(1.08);
+            filter: brightness(1.05);
+        }
+
+        .heart-close-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
+<div id="welcome-overlay">
+    <div class="heart-box">
+        <!-- SVG drawing the heart shape -->
+        <svg class="heart-svg" viewBox="0 0 32 29.6">
+            <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2
+            c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z" fill="#ff9fb3"/>
+        </svg>
+
+        <!-- Text and Button inside the heart -->
+        <div class="heart-content">
+            <h2>🌸 Dear My Love, 🌸</h2>
+            <p>
+                I have finally updated the game (with help from AI, I know this is why it's hot). I won't take as long
+                to update it next time, but I also need you give me ideas because I have now implemented all my ideas.
+                I hope this game is just a small glimpse into our future life together with our house, garden,
+                and animals. You are my world and I can't wait to spend the rest of our lives together! <br>
+                I LOVE YOU 3000! I MISS YOU 3000! TE AMO 3000! <br> TE QUIERO 3000! TE AMO 3000! TE EXTRAÑO 3000! <br>
+                I SAID IT FIRST!!! <br>
+                9/1/2026
+            </p>
+            <button class="heart-close-btn" onclick="closeHeartBox()">P <3 G</button>
+        </div>
+    </div>
+</div>
+
 <canvas id="canvas"></canvas>
 <div id="ui">
 
@@ -145,7 +303,10 @@
     </div>
 
     <!-- TOP CENTER: Title -->
-    <div id="tc"><div id="tbadge">🌸 My Island Terrarium 🌸</div></div>
+    <div id="tc"><div id="tbadge">🌸 My Island 🌸</div></div>
+
+    <!-- TOP RIGHT: Settings -->
+    <div id="sbtn" class="panel" onclick="toggleSettings()">⚙️ Settings</div>
 
     <!-- BOTTOM LEFT: Bells + Action Bar -->
     <div id="bl">
@@ -153,13 +314,16 @@
         <div id="abar" class="panel"></div>
     </div>
 
-    <!-- BOTTOM RIGHT: Settings -->
-    <div id="sbtn" class="panel" onclick="toggleSettings()">⚙️ Settings</div>
+    <!-- BOTTOM RIGHT: Flower Log + Shop -->
+    <div id="brRow">
+        <div id="flogbtn" class="panel" onclick="toggleFlowerLog()">📖 Flower Log</div>
+        <div id="shopbtn" class="panel" onclick="toggleShop()">🛍️ Shop</div>
+    </div>
     <div id="spanel" class="panel">
         <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:10px;">⚙️ Settings</div>
         <div class="sl">Terrarium Name</div>
-        <input class="si" id="nameinput" value="My Island Terrarium"
-               oninput="const n=this.value||'Island Terrarium';document.getElementById('tbadge').textContent='🌸 '+n+' 🌸';document.title='🌸 '+n+' 🌸';localStorage.setItem('t_name',n)">
+        <input class="si" id="nameinput" value="My Island"
+               oninput="const n=this.value||'My Island';document.getElementById('tbadge').textContent='🌸 '+n+' 🌸';document.title='🌸 '+n+' 🌸';localStorage.setItem('t_name',n)">
         <div class="sl">View</div>
         <button class="btn blu full" onclick="hideUI()">🙈 Hide UI &nbsp;<span style="opacity:.6;font-size:10px">(click to restore)</span></button>
         <div class="sl">Danger Zone</div>
@@ -170,7 +334,45 @@
     <div id="tbox"></div>
 </div>
 
+<div id="shopwrap">
+    <div id="shopbackdrop" onclick="toggleShop()"></div>
+    <div id="shoppanel" class="panel">
+        <div id="shophead">
+            <div id="shoptitle">🛍️ Shop</div>
+            <div id="shopclose" onclick="toggleShop()">✕ Close</div>
+        </div>
+        <div id="shoptabs">
+            <div class="stab" id="tab-bg" onclick="setShopTab('bg')">🖼️ Backgrounds</div>
+            <div class="stab" id="tab-house" onclick="setShopTab('house')">🏠 House</div>
+            <div class="stab" id="tab-animals" onclick="setShopTab('animals')">🐾 Animals</div>
+        </div>
+        <div id="shopbody"></div>
+    </div>
+</div>
+
+<div id="flogwrap">
+    <div id="flogbackdrop" onclick="toggleFlowerLog()"></div>
+    <div id="flogpanel" class="panel">
+        <div id="floghead">
+            <div id="flogtitle">📖 Flower Log</div>
+            <div id="flogprogress">0 / 0 collected</div>
+            <div id="flogclose" onclick="toggleFlowerLog()">✕ Close</div>
+        </div>
+        <div id="flogbody"></div>
+    </div>
+</div>
+
 <script>
+    function closeHeartBox() {
+        const overlay = document.getElementById('welcome-overlay');
+        // Fade out effect
+        overlay.style.opacity = '0';
+
+        // Remove it completely from the HTML after the fade animation finishes
+        setTimeout(() => {
+            overlay.remove();
+        }, 400); // 400ms matches the CSS transition time
+    }
     /* ═══════════════════════════════════════════════
        FLOWER DEFINITIONS
     ═══════════════════════════════════════════════ */
@@ -244,24 +446,24 @@
         rose: {
             'red+white':   { 'pink': 6, 'red': 2, 'white': 2 },
             'red+yellow':  { 'orange': 6, 'red': 2, 'yellow': 2 },
+            'red+red':     { 'black': 3, 'red': 7 },
             'white+white': { 'purple': 4, 'white': 6 },
             'pink+orange': { 'blue': 4, 'pink': 3, 'orange': 3 },
-            'red+red':     { 'black': 3, 'red': 7 },
             'black+black': { 'gold': 1, 'black': 9 } // Gold is extra rare!
         },
         tulip: {
             'red+yellow':    { 'orange': 6, 'red': 2, 'yellow': 2 },
             'red+white':     { 'pink': 6, 'red': 2, 'white': 2 },
-            'orange+orange': { 'purple': 4, 'orange': 6 },
             'red+red':       { 'black': 3, 'red': 7 },
+            'orange+orange': { 'purple': 4, 'orange': 6 }
         },
         pansy: {
             'red+yellow':  { 'orange': 6, 'red': 2, 'yellow': 2 },
-            'red+blue':    { 'pink': 6, 'red': 2, 'blue': 2 },
             'white+white': { 'blue': 4, 'white': 6 },
-            'pink+pink':   { 'purple': 4, 'pink': 6 },
-            'black+black': { 'purple': 4, 'black': 6 },
+            'red+blue':    { 'pink': 6, 'red': 2, 'blue': 2 },
             'orange+blue': { 'black': 2, 'orange': 4, 'blue': 4 },
+            'pink+pink':   { 'purple': 4, 'pink': 6 },
+            'black+black': { 'purple': 4, 'black': 6 }
         },
         cosmos: {
             'red+yellow':    { 'orange': 6, 'red': 2, 'yellow': 2 },
@@ -292,6 +494,34 @@
     };
 
     /* ═══════════════════════════════════════════════
+       SHOP DATA — backgrounds, house tiers, animals
+    ═══════════════════════════════════════════════ */
+    const THEMES = {
+        meadow:  { name:'Sunny Meadow',   icon:'🌼', price:0,    grass:0x7BC67E, dirt:0x8B5A2B, sky:0x87CEEB, particle:'none',      desc:'Open trees & sky',    groundHex:0x6FAE5A, water:false, trees:'normal' },
+        beach:   { name:'Beach Paradise', icon:'🏖️', price:600,  grass:0xE8D28A, dirt:0xC9A227, sky:0x6FD8D2, particle:'none',      desc:'Sand, sea & a beach umbrella',   groundHex:0xE6CE93, water:true,  trees:null },
+        zen:     { name:'Zen Garden',     icon:'🎋', price:850,  grass:0x9FAE87, dirt:0x8A7F68, sky:0xF3E4D0, particle:'petals',    desc:'Cherry blossom grove',groundHex:0x8FA377, water:false, trees:'cherry' },
+        frost:   { name:'Frost Garden',   icon:'❄️', price:950,  grass:0xDCEAF2, dirt:0xB9C6CE, sky:0xDCE8F5, particle:'sparkle',   desc:'Snowy fields',        groundHex:0xF2F8FC, water:false, trees:null },
+        starlit: { name:'Starlit Meadow', icon:'🌌', price:1300, grass:0x2E4048, dirt:0x2A2438, sky:0x1B1A3A, particle:'fireflies', desc:'Fireflies & night trees',groundHex:0x1B2A20, water:false, trees:'dark' },
+    };
+
+    const HOUSE_TIERS = [
+        null, // tier 0 = no house
+        { name:'Tiny Shed',       icon:'🛖', price:700,  desc:'A humble start' },
+        { name:'Cozy Cottage',    icon:'🏡', price:1800, desc:'Windows & a chimney' },
+        { name:'Grand Farmhouse', icon:'🏠', price:3500, desc:'The full estate' },
+    ];
+    const HOUSE_ROOF_COLORS = ['#B5533C','#4A6FA5','#6B8E4E','#8B6F47','#6B4C7A','#3A3A3A','#D4A24C'];
+    const HOUSE_WALL_COLORS = ['#F5E6D3','#FFFFFF','#D9B65C','#8B9A7D','#B7CADB','#C97B5C','#9C8A76'];
+    const HOUSE_ISLAND = { x:-16, z:0, r:3.0 }; // a smaller island of its own, linked by a bridge
+    const HOUSE_ANCHOR = { x:HOUSE_ISLAND.x - 0.8, z:HOUSE_ISLAND.z }; // pulled back from the bridge for yard space
+    const HOUSE_FACING_ANGLE = Math.atan2(-HOUSE_ISLAND.x, -HOUSE_ISLAND.z); // rotate the house to face back toward the garden
+
+    const ANIMALS = {
+        cat: { name:'Brown Cat',           icon:'🐈', price:500 },
+        dog: { name:'Golden Retriever Pup',icon:'🐕', price:750 },
+    };
+
+    /* ═══════════════════════════════════════════════
        APP STATE
     ═══════════════════════════════════════════════ */
     let mode        = 'idle';
@@ -307,11 +537,27 @@
     let wType       = 'clear';
     let wLat        = 37.35, wLon = -121.95;
 
-    const GROW_BASE = 100 / (12 * 3600 * 1000);
+    // Shop state
+    let currentBackground = localStorage.getItem('t_bg') || 'meadow';
+    let ownedBackgrounds  = new Set(JSON.parse(localStorage.getItem('t_bgOwned') || '["meadow"]'));
+    let houseUnlocked = parseInt(localStorage.getItem('t_houseUnlocked') || localStorage.getItem('t_houseTier') || '0');
+    let houseTier   = parseInt(localStorage.getItem('t_houseTier') || String(houseUnlocked));
+    let houseRoof   = localStorage.getItem('t_houseRoof') || HOUSE_ROOF_COLORS[0];
+    let houseWall   = localStorage.getItem('t_houseWall') || HOUSE_WALL_COLORS[0];
+    let ownedAnimals = JSON.parse(localStorage.getItem('t_animals') || '{"cat":false,"dog":false}');
+    let shopTab = 'bg';
+
+    const GROW_BASE = 100 / (48 * 3600 * 1000);
     // const GROW_BASE = 100 / 10;
     const MATURE = 100, BREED = 200;
     // ── FIXED: PLANT_R now matches visible island boundary ──
-    const PLANT_R = 11.75, ISLAND_R = 11.75;
+    const PLANT_R = 9.75, ISLAND_R = 9.75;
+
+    /* Centralized spot check — used by planting, moving, and ghost preview */
+    function isValidPlantSpot(gx, gz) {
+        if (gardenGrid.has(`${gx},${gz}`)) return false;
+        return Math.hypot(gx, gz) <= PLANT_R;
+    }
 
     /* ═══════════════════════════════════════════════
        THREE.JS SCENE
@@ -321,7 +567,7 @@
     scene.fog = new THREE.FogExp2(0x87CEEB, 0.013);
 
     const camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 500);
-    camera.position.set(0, 17, 27);
+    camera.position.set(-4.5, 21, 34);
 
     const renderer = new THREE.WebGLRenderer({ antialias:true, canvas:document.getElementById('canvas') });
     renderer.setSize(innerWidth, innerHeight);
@@ -334,11 +580,13 @@
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
-    controls.enableRotate = false;
+    controls.enableRotate = true;
     controls.enablePan    = false;
+    controls.minPolarAngle = Math.PI * 0.18;
+    controls.maxPolarAngle = Math.PI * 0.49;
     controls.minDistance  = 8;
-    controls.maxDistance  = 50;
-    controls.target.set(0, 1, 0);
+    controls.maxDistance  = 56;
+    controls.target.set(-4.5, 1, 0);
 
     /* Lights */
     const ambL = new THREE.AmbientLight(0xffffff, 0.6);
@@ -369,6 +617,159 @@
 
     const grass = new THREE.Mesh(new THREE.CylinderGeometry(ISLAND_R, ISLAND_R, 0.45, 64), grassMat);
     grass.position.y = 0.22; grass.receiveShadow = true; scene.add(grass);
+
+    /* ═══ HOUSE ISLAND + BRIDGE ═══
+       A smaller second island for the house, linked to the main
+       island by a short wooden bridge. It reuses dirtMat/grassMat
+       so it automatically matches whatever weather or background
+       theme is currently active — no extra syncing code needed. */
+    const hiBase = new THREE.Mesh(new THREE.CylinderGeometry(HOUSE_ISLAND.r, HOUSE_ISLAND.r-0.5, 3.5, 64), dirtMat);
+    hiBase.position.set(HOUSE_ISLAND.x, -1.3, HOUSE_ISLAND.z); hiBase.receiveShadow = true; scene.add(hiBase);
+
+    const hiGrass = new THREE.Mesh(new THREE.CylinderGeometry(HOUSE_ISLAND.r, HOUSE_ISLAND.r, 0.45, 64), grassMat);
+    hiGrass.position.set(HOUSE_ISLAND.x, 0.295, HOUSE_ISLAND.z); hiGrass.receiveShadow = true; scene.add(hiGrass);
+
+    (function buildBridge(fromR, toCenter, toR) {
+        const dist = Math.hypot(toCenter.x, toCenter.z);
+        const dirX = toCenter.x/dist, dirZ = toCenter.z/dist;
+        const perpX = -dirZ, perpZ = dirX;
+        const sx = dirX*fromR,            sz = dirZ*fromR;          // edge of main island
+        const ex = toCenter.x - dirX*toR, ez = toCenter.z - dirZ*toR; // edge of house island
+        const midX = (sx+ex)/2, midZ = (sz+ez)/2;
+        const len = Math.hypot(ex-sx, ez-sz);
+        const angle = Math.atan2(ex-sx, ez-sz);
+
+        const g = new THREE.Group();
+        const plankMat = new THREE.MeshPhongMaterial({ color:0xa9825a, shininess:8 });
+        const railMat  = new THREE.MeshPhongMaterial({ color:0x7a5a35, shininess:8 });
+
+        const deck = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.12, len+0.5), plankMat);
+        deck.position.set(midX, 0.44, midZ); deck.rotation.y = angle;
+        deck.castShadow = true; deck.receiveShadow = true; g.add(deck);
+
+        const postCount = Math.max(3, Math.round(len)+1);
+        for (let side=-1; side<=1; side+=2) {
+            const rail = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.07,len+0.3), railMat);
+            rail.position.set(midX+perpX*side*0.72, 0.44+0.34, midZ+perpZ*side*0.72);
+            rail.rotation.y = angle; g.add(rail);
+            for (let i=0;i<postCount;i++) {
+                const tt = i/(postCount-1);
+                const cx = sx+(ex-sx)*tt, cz = sz+(ez-sz)*tt;
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.032,0.38,6), railMat);
+                post.position.set(cx+perpX*side*0.72, 0.44+0.17, cz+perpZ*side*0.72);
+                g.add(post);
+            }
+        }
+        scene.add(g);
+    })(ISLAND_R, HOUSE_ISLAND, HOUSE_ISLAND.r);
+
+    /* ═══ SURROUNDING ENVIRONMENT (theme-driven) ═══
+       A wide, low layer below the islands so background
+       themes read as an actual change of scenery — sand and
+       water for the beach, snow for frost, a tree grove for
+       meadow/zen/starlit — instead of just a color tint.
+       Colors here are re-tinted every frame based on weather
+       (see updateEnvTargets/animate) so rain, snow and storms
+       visibly override whichever background is equipped. */
+    const ENV_R = 58, ENV_Y = -3.3, BEACH_SAND_R = 16;
+    const envGroundMat = new THREE.MeshPhongMaterial({ color:0x6FAE5A, shininess:6 });
+    const envGround = new THREE.Mesh(new THREE.CircleGeometry(ENV_R, 56), envGroundMat);
+    envGround.rotation.x = -Math.PI/2; envGround.position.y = ENV_Y; envGround.receiveShadow = true;
+    scene.add(envGround);
+
+    // Beach-only: a smaller sand shore close to the islands, with open water extending out beyond its edge
+    const envSandMat = new THREE.MeshPhongMaterial({ color:0xE6CE93, shininess:8 });
+    const envSand = new THREE.Mesh(new THREE.CircleGeometry(BEACH_SAND_R, 48), envSandMat);
+    envSand.rotation.x = -Math.PI/2; envSand.position.y = ENV_Y + 0.05; envSand.receiveShadow = true; envSand.visible = false;
+    scene.add(envSand);
+
+    const envWaterMat = new THREE.MeshPhongMaterial({ color:0x3aa8c4, shininess:95, transparent:true, opacity:0.88 });
+    const envWater = new THREE.Mesh(new THREE.CircleGeometry(ENV_R, 56), envWaterMat);
+    envWater.rotation.x = -Math.PI/2; envWater.position.y = ENV_Y - 0.08; envWater.visible = false;
+    scene.add(envWater);
+
+    function mkTree(kind, darkness=1) {
+        const g = new THREE.Group();
+        const trunkCol = new THREE.Color(0x6b4a2a).multiplyScalar(darkness);
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.10,0.15,1.15,7), new THREE.MeshPhongMaterial({color:trunkCol,shininess:5}));
+        trunk.position.y = 0.575; trunk.castShadow = true; g.add(trunk);
+        const palette = (kind==='cherry' ? [0xf7b8d0,0xf29dc0,0xffd4e4] : [0x5a9e4a,0x4a8c3a,0x6bae5a])
+            .map(h => new THREE.Color(h).multiplyScalar(darkness));
+        [
+            {x:0,    y:1.42, z:0,     r:0.44},
+            {x:0.24, y:1.20, z:0.13,  r:0.31},
+            {x:-0.22,y:1.24, z:-0.16, r:0.29},
+            {x:0.05, y:1.62, z:-0.09, r:0.27},
+        ].forEach((b,i) => {
+            const leaf = new THREE.Mesh(new THREE.SphereGeometry(b.r,8,7), new THREE.MeshPhongMaterial({color:palette[i%palette.length],shininess:10}));
+            leaf.position.set(b.x,b.y,b.z); leaf.castShadow = true; g.add(leaf);
+        });
+        return g;
+    }
+
+    // Striped beach umbrella (two half-cones so it reads as a classic 2-tone canopy) + a small mat underneath
+    function mkBeachUmbrella() {
+        const g = new THREE.Group();
+        const poleMat = new THREE.MeshPhongMaterial({ color:0xD9C9A3, shininess:20 });
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.045,1.5,8), poleMat);
+        pole.position.y = 0.75; pole.castShadow = true; g.add(pole);
+
+        const canopyA = new THREE.MeshPhongMaterial({ color:0xE0483F, side:THREE.DoubleSide, shininess:15 });
+        const canopyB = new THREE.MeshPhongMaterial({ color:0xF5EFD9, side:THREE.DoubleSide, shininess:15 });
+        const halfA = new THREE.Mesh(new THREE.ConeGeometry(0.78,0.42,16,1,false,0,Math.PI), canopyA);
+        halfA.position.y = 1.62; halfA.castShadow = true; g.add(halfA);
+        const halfB = new THREE.Mesh(new THREE.ConeGeometry(0.78,0.42,16,1,false,Math.PI,Math.PI), canopyB);
+        halfB.position.y = 1.62; halfB.castShadow = true; g.add(halfB);
+        const finial = new THREE.Mesh(new THREE.SphereGeometry(0.045,7,6), canopyA);
+        finial.position.y = 1.62 + 0.42/2 + 0.03; g.add(finial);
+
+        const beachMat = new THREE.Mesh(new THREE.CircleGeometry(0.5,20), new THREE.MeshPhongMaterial({ color:0xF0E6C8, side:THREE.DoubleSide, shininess:5 }));
+        beachMat.rotation.x = -Math.PI/2; beachMat.position.y = 0.012; g.add(beachMat);
+        return g;
+    }
+
+    // Fixed slots around the islands, angled to leave the bridge corridor (~180°) clear
+    const TREE_SLOTS = [
+        {a:10,r:12.5},{a:45,r:13.5},{a:75,r:11.8},{a:110,r:13.0},
+        {a:230,r:12.8},{a:260,r:14.2},{a:290,r:12.0},{a:320,r:13.6},{a:350,r:12.2},
+        {a:20,r:17.5},{a:95,r:18.5},{a:250,r:17.8},{a:305,r:18.8},
+    ];
+    const UMBRELLA_SLOTS = [ {a:70,r:12.2}, {a:115,r:13.4} ];
+    let envDecor = [];
+
+    function applyThemeEnvironment() {
+        const theme = THEMES[currentBackground] || THEMES.meadow;
+        const isBeach = !!theme.water;
+        envGround.visible = !isBeach;
+        envSand.visible = isBeach;
+        envWater.visible = isBeach;
+
+        envDecor.forEach(d => { scene.remove(d); d.traverse(c=>{ if(c.isMesh){ c.geometry.dispose(); c.material.dispose(); }}); });
+        envDecor = [];
+
+        if (isBeach) {
+            UMBRELLA_SLOTS.forEach(slot => {
+                const rad = slot.a*Math.PI/180;
+                const umbrella = mkBeachUmbrella();
+                umbrella.position.set(Math.cos(rad)*slot.r, ENV_Y+0.05, Math.sin(rad)*slot.r);
+                umbrella.rotation.y = Math.random()*Math.PI*2;
+                scene.add(umbrella); envDecor.push(umbrella);
+            });
+        } else if (theme.trees) {
+            const kind = theme.trees === 'dark' ? 'normal' : theme.trees;
+            const darkness = theme.trees === 'dark' ? 0.55 : 1;
+            TREE_SLOTS.forEach(slot => {
+                const rad = slot.a * Math.PI/180;
+                const tree = mkTree(kind, darkness);
+                const scale = 0.85 + Math.random()*0.5;
+                tree.position.set(Math.cos(rad)*slot.r, ENV_Y, Math.sin(rad)*slot.r);
+                tree.scale.setScalar(scale);
+                tree.rotation.y = Math.random()*Math.PI*2;
+                scene.add(tree);
+                envDecor.push(tree);
+            });
+        }
+    }
 
     /* Invisible flat plane at grass-top height — used for raycasting everywhere on island */
     const rayPlane = new THREE.Mesh(
@@ -443,6 +844,13 @@
     const RAIN = mkPts(0x88aaff, 0.09, 1800);
     const SNOW = mkPts(0xeef4ff, 0.13, 900);
 
+    // Ambient background-theme particles (independent of weather)
+    const PETALS = mkPts(0xffb7d5, 0.12, 260);
+    const SPARKLE = mkPts(0xeaf6ff, 0.065, 450);
+    const FIREFLIES = mkPts(0xfff29a, 0.11, 110);
+    for (let i=1;i<FIREFLIES.n*3;i+=3) FIREFLIES.pos[i] = 0.3+Math.random()*2.6; // keep fireflies low, near the garden
+    FIREFLIES.pts.geometry.attributes.position.needsUpdate = true;
+
     const cloudGrp = new THREE.Group();
     const cloudMat = new THREE.MeshPhongMaterial({ color:0xffffff, transparent:true, opacity:0, flatShading:true });
     for (let i=0; i<14; i++) {
@@ -456,7 +864,7 @@
        WEATHER STATES
     ═══════════════════════════════════════════════ */
     const WSTATE = {
-        clear:  { name:'Clear Sky',   icon:'☀️',  sky:0x87CEEB, dirt:0x8B5A2B, grass:0x7BC67E, fog:0.012, rain:0,   snow:0,   cloud:0.08, mult:1.0,  ambMul:1.0,  dirMul:1.0,  growth:'Slow growth (2 days)'  },
+        clear:  { name:'Clear Sky',   icon:'☀️',  sky:0x87CEEB, dirt:0x8B5A2B, grass:0x7BC67E, fog:0.012, rain:0,   snow:0,   cloud:0,    mult:1.0,  ambMul:1.0,  dirMul:1.0,  growth:'Slow growth (2 days)'  },
         cloudy: { name:'Cloudy',      icon:'⛅',  sky:0x90A4AE, dirt:0x6e4a2d, grass:0x6E9A6F, fog:0.018, rain:0,   snow:0,   cloud:0.85, mult:1.33, ambMul:0.75, dirMul:0.45, growth:'Moderate (1.5 days)'   },
         rain:   { name:'Raining',     icon:'🌧️', sky:0x546E7A, dirt:0x4E342E, grass:0x5B805C, fog:0.028, rain:0.6, snow:0,   cloud:0.92, mult:2.0,  ambMul:0.6,  dirMul:0.2,  growth:'Boosted (1 day!)'      },
         snow:   { name:'Snowing',     icon:'❄️',  sky:0xCFD8DC, dirt:0x888888, grass:0xECEFF1, fog:0.035, rain:0,   snow:0.8, cloud:0.7,  mult:0.5,  ambMul:0.75, dirMul:0.35, growth:'Frozen — slow growth'  },
@@ -502,23 +910,53 @@
         };
     }
 
+    // How the environment's ground/sand/water read under each weather type, regardless of
+    // which background theme is equipped — snow always looks snowy, storms always look stormy.
+    function envWeatherTint(hex, wt) {
+        const c = new THREE.Color(hex);
+        if (wt==='snow')   return c.lerp(new THREE.Color(0xEFF6FA), 0.85);
+        if (wt==='storm')  return c.multiplyScalar(0.5);
+        if (wt==='rain')   return c.multiplyScalar(0.68);
+        if (wt==='cloudy') return c.multiplyScalar(0.85);
+        return c;
+    }
+    function envWaterWeather(wt) {
+        if (wt==='snow')   return { color:0x9fb8c4, opacity:0.75 };
+        if (wt==='storm')  return { color:0x2a4a52, opacity:0.92 };
+        if (wt==='rain')   return { color:0x3a7888, opacity:0.90 };
+        if (wt==='cloudy') return { color:0x3a9ab0, opacity:0.88 };
+        return { color:0x3aa8c4, opacity:0.88 };
+    }
+
     const VT = {
         sky:new THREE.Color(0x87CEEB), dirt:new THREE.Color(0x7a5530), grass:new THREE.Color(0x7BC67E),
         fog:0.013, rain:0, snow:0, cloud:0, ambI:0.6, dirI:0.9, moonI:0,
         sunPos:new THREE.Vector3(-3,22,10),
+        envGround:new THREE.Color(0x6FAE5A), envWaterColor:new THREE.Color(0x3aa8c4), envWaterOpacity:0.88,
     };
     const L = 0.006;
 
     function updateEnvTargets() {
         const te = getTimeEnv(); const ws = WSTATE[wType];
+        const theme = THEMES[currentBackground] || THEMES.meadow;
         const wSky = new THREE.Color(ws.sky);
         const mixAmt = wType==='clear'?0 : wType==='cloudy'?0.3 : wType==='rain'?0.65 : wType==='snow'?0.4 : 0.85;
-        VT.sky.copy(te.sky.clone().lerp(wSky, mixAmt));
-        VT.dirt.setHex(ws.dirt); VT.grass.setHex(ws.grass);
+        // Theme tints the sky (blended with time-of-day), then weather takes over as it worsens
+        const themedSky = te.sky.clone().lerp(new THREE.Color(theme.sky), 0.4);
+        VT.sky.copy(themedSky.lerp(wSky, mixAmt));
+        // Ground: pure theme in clear/cloudy weather; dramatic weather colors override it (storm looks like storm anywhere)
+        const groundWeatherAmt = wType==='clear'?0 : wType==='cloudy'?0.35 : 1;
+        VT.dirt.copy(new THREE.Color(theme.dirt).lerp(new THREE.Color(ws.dirt), groundWeatherAmt));
+        VT.grass.copy(new THREE.Color(theme.grass).lerp(new THREE.Color(ws.grass), groundWeatherAmt));
         VT.fog=ws.fog; VT.rain=ws.rain; VT.snow=ws.snow; VT.cloud=ws.cloud;
         VT.ambI=te.amb*ws.ambMul; VT.dirI=te.sunI*ws.dirMul;
         VT.moonI=te.moonI*(wType==='storm'?0.1:1);
         VT.sunPos.set(te.sunX,te.sunY,10);
+        // Surrounding environment (sand/grass/snow-field + open water) reacts to real weather too
+        VT.envGround.copy(envWeatherTint(theme.groundHex, wType));
+        const waterW = envWaterWeather(wType);
+        VT.envWaterColor.set(waterW.color); VT.envWaterOpacity = waterW.opacity;
+        VT.themeParticle = (theme.particle==='fireflies') ? (te.sunI<0.15 ? 'fireflies' : 'none') : theme.particle;
     }
 
     /* ═══════════════════════════════════════════════
@@ -604,24 +1042,43 @@
         return 3;
     }
 
-    /* Stage 1 – Seed: tiny green sprout poking from soil */
-    function mkSeedMesh(ghost=false) {
+    /* Stage 1 – Seed: tiny sprout poking from soil, shaped per-type like the reference sheet */
+    function mkSeedMesh(type, ghost=false) {
         const op=ghost?0.5:1, tp=ghost;
         const g = new THREE.Group();
         const SM = (col) => new THREE.MeshPhongMaterial({color:col,transparent:tp,opacity:op,shininess:20});
         // Soil mound
         const mound = new THREE.Mesh(new THREE.SphereGeometry(0.18,8,6), SM(0x6b4a2a));
         mound.scale.set(1,0.35,1); mound.position.y=0.06; g.add(mound);
-        // Sprout stem
-        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.028,0.18,6), SM(0x5aaa44));
-        stem.position.y=0.22; g.add(stem);
-        // Two tiny cotyledon leaves
-        for (let i=0;i<2;i++) {
-            const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.07,6,4), SM(0x66bb44));
-            leaf.scale.set(0.5,0.28,1.1);
-            leaf.position.set(i===0?0.07:-0.07, 0.32, 0);
-            leaf.rotation.z = i===0 ? -0.4 : 0.4;
-            g.add(leaf);
+
+        if (type==='tulip' || type==='hyacinth' || type==='lily') {
+            // Bulb flowers: a pair of narrow upright spikes, no flat cotyledons yet
+            for (let i=0;i<2;i++) {
+                const spike = new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.02,0.24,5), SM(0x4a9e44));
+                spike.position.set(i===0?0.045:-0.045, 0.16, i===0?-0.02:0.02);
+                spike.rotation.z = i===0?-0.09:0.09;
+                g.add(spike);
+            }
+        } else if (type==='cosmos' || type==='windflower') {
+            // Wiry/fine sprouts: three thin threads instead of round leaves
+            for (let i=0;i<3;i++) {
+                const a=(i/3)*Math.PI*2;
+                const thread = new THREE.Mesh(new THREE.CylinderGeometry(0.006,0.012,0.2,4), SM(0x5aaa44));
+                thread.position.set(Math.cos(a)*0.035, 0.15, Math.sin(a)*0.035);
+                thread.rotation.z = Math.cos(a)*0.22; thread.rotation.x = Math.sin(a)*0.22;
+                g.add(thread);
+            }
+        } else {
+            // Rose / pansy / cosmos-fallback / mum: classic rounded cotyledon pair
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.028,0.18,6), SM(0x5aaa44));
+            stem.position.y=0.22; g.add(stem);
+            for (let i=0;i<2;i++) {
+                const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.07,6,4), SM(0x66bb44));
+                leaf.scale.set(0.5,0.28,1.1);
+                leaf.position.set(i===0?0.07:-0.07, 0.32, 0);
+                leaf.rotation.z = i===0 ? -0.4 : 0.4;
+                g.add(leaf);
+            }
         }
         // Click hitbox
         const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.5,8), new THREE.MeshBasicMaterial({visible:false}));
@@ -707,7 +1164,7 @@
             stem.position.y=0.375; g.add(stem);
             // Feathery pinnate leaf clusters at two heights
             const heights = [0.2, 0.42];
-            heights.forEach((h, hi) => {
+            heights.forEach((h) => {
                 for (let s=0;s<2;s++) {
                     const sideX = s===0?0.09:-0.09;
                     // Each cluster has 3 thin leaflets fanning out
@@ -1188,10 +1645,73 @@
 
     /* Unified mesh factory — dispatches by stage */
     function mkFlowerMesh(type, color, ghost=false, stage=3) {
-        if (stage===0) return mkSeedMesh(ghost);
+        if (stage===0) return mkSeedMesh(type, ghost);
         if (stage===1) return mkStemMesh(type, color, ghost);
         if (stage===2) return mkBudMesh(type, color, ghost);
         return mkBloomMesh(type, color, ghost);
+    }
+
+    /* ═══════════════════════════════════════════════
+       FLOWER RENDER CACHE (performance)
+       A single bloomed hyacinth/mum is built from 100–400+
+       tiny petal meshes. Rendered directly that's one WebGL
+       draw call PER MESH — with a full island of flowers that
+       adds up fast. Instead we build each (type,stage,color)
+       combo once, bake every child's color into vertex colors,
+       and merge all its geometry into ONE BufferGeometry. Every
+       later flower of that same combo just reuses the cached
+       geometry — one draw call each, and zero rebuild cost.
+       A separate small invisible hitbox (kept from the original
+       group) still rides along for easy clicking.
+    ═══════════════════════════════════════════════ */
+    const FLOWER_MATERIAL = new THREE.MeshPhongMaterial({ vertexColors:true, shininess:25, side:THREE.DoubleSide });
+    const HITBOX_MATERIAL = new THREE.MeshBasicMaterial({ visible:false });
+    const flowerGeoCache  = new Map();
+
+    function getFlowerGeometry(type, stage, color) {
+        const key = `${type}-${stage}-${color}`;
+        if (flowerGeoCache.has(key)) return flowerGeoCache.get(key);
+
+        const group = mkFlowerMesh(type, color, false, stage);
+        const parts = [];
+        let hitboxGeo = null;
+
+        group.children.forEach(child => {
+            if (!child.isMesh) return;
+            child.updateMatrix(); // bake current position/rotation/scale into child.matrix
+            if (child.material && child.material.visible === false) {
+                if (!hitboxGeo) hitboxGeo = child.geometry.clone().applyMatrix4(child.matrix);
+                return;
+            }
+            const geo = child.geometry.clone().applyMatrix4(child.matrix);
+            geo.clearGroups();
+            const col = (child.material && child.material.color) ? child.material.color : new THREE.Color(0xffffff);
+            const n = geo.attributes.position.count;
+            const colorArr = new Float32Array(n*3);
+            for (let i=0;i<n;i++){ colorArr[i*3]=col.r; colorArr[i*3+1]=col.g; colorArr[i*3+2]=col.b; }
+            geo.setAttribute('color', new THREE.BufferAttribute(colorArr,3));
+            parts.push(geo);
+        });
+
+        const visualGeo = parts.length
+            ? THREE.BufferGeometryUtils.mergeBufferGeometries(parts, false)
+            : new THREE.BufferGeometry();
+        if (visualGeo) visualGeo.clearGroups();
+        if (!hitboxGeo) hitboxGeo = new THREE.CylinderGeometry(0.35,0.35,0.6,8);
+
+        const result = { visualGeo, hitboxGeo };
+        flowerGeoCache.set(key, result);
+        return result;
+    }
+
+    /* Builds ONE lightweight instance (fresh Mesh, shared cached geometry+material) for placement */
+    function buildFlowerInstanceMesh(type, stage, color) {
+        const { visualGeo, hitboxGeo } = getFlowerGeometry(type, stage, color);
+        const mesh = new THREE.Mesh(visualGeo, FLOWER_MATERIAL);
+        mesh.castShadow = true; mesh.receiveShadow = true;
+        const hitbox = new THREE.Mesh(hitboxGeo, HITBOX_MATERIAL);
+        mesh.add(hitbox);
+        return mesh;
     }
 
     /* ═══════════════════════════════════════════════
@@ -1221,17 +1741,17 @@
     /* ═══════════════════════════════════════════════
        GRID MANAGEMENT
     ═══════════════════════════════════════════════ */
-    function placeFlower(type, color, gx, gz, growth=0) {
-        if (gardenGrid.has(`${gx},${gz}`)) return null;
-        if (Math.hypot(gx,gz) > PLANT_R)   return null;
+    function placeFlower(type, color, gx, gz, growth=0, announce=true) {
+        if (!isValidPlantSpot(gx, gz)) return null;
         const stage = getStage(growth);
-        const mesh  = mkFlowerMesh(type, color, false, stage);
+        const mesh  = buildFlowerInstanceMesh(type, stage, color);
         mesh.position.set(gx, 0.4, gz);
         scene.add(mesh);
         const f = { type, color, gx, gz, growth, stage, mesh, off:Math.random()*10 };
         gardenGrid.set(`${gx},${gz}`, f);
         mesh.traverse(c=>{ if(c.isMesh){ fMeshes.push(c); mesh2f.set(c.uuid,f); }});
         setScale(f);
+        recordCollected(type, color, announce);
         return f;
     }
 
@@ -1254,7 +1774,7 @@
 
         // Build new mesh
         f.stage = newStage;
-        f.mesh  = mkFlowerMesh(f.type, f.color, false, newStage);
+        f.mesh  = buildFlowerInstanceMesh(f.type, newStage, f.color);
         f.mesh.position.set(f.gx, 0.4, f.gz);
         scene.add(f.mesh);
         f.mesh.traverse(c=>{ if(c.isMesh){ fMeshes.push(c); mesh2f.set(c.uuid,f); }});
@@ -1326,23 +1846,29 @@
         if (!selFlower) return;
         movFlower=selFlower; _remRing(movFlower);
         gardenGrid.delete(`${movFlower.gx},${movFlower.gz}`);
-        movFlower.mesh.traverse(c=>{ if(c.isMesh&&c.material){c.material=c.material.clone();c.material.transparent=true;c.material.opacity=.4;}});
+        movFlower.mesh.material = movFlower.mesh.material.clone();
+        movFlower.mesh.material.transparent = true;
+        movFlower.mesh.material.opacity = 0.4;
         selFlower=null; setMode('moving'); toast('🔄 Click a new spot to place it!');
+    }
+    function _restoreMovMaterial(f) {
+        if (f.mesh.material !== FLOWER_MATERIAL) f.mesh.material.dispose();
+        f.mesh.material = FLOWER_MATERIAL;
     }
     function cancelMove() {
         if (!movFlower) return;
         gardenGrid.set(`${movFlower.gx},${movFlower.gz}`,movFlower);
-        movFlower.mesh.traverse(c=>{ if(c.isMesh&&c.material){c.material.transparent=false;c.material.opacity=1;}});
+        _restoreMovMaterial(movFlower);
         movFlower=null; setMode('idle');
     }
     function confirmMove(gx,gz) {
         if (!movFlower) return;
         if (gardenGrid.has(`${gx},${gz}`)) { toast('That spot is taken!'); return; }
-        if (Math.hypot(gx,gz)>PLANT_R)     { toast("Can't plant outside the island!"); return; }
+        if (!isValidPlantSpot(gx,gz))      { toast("Can't plant outside the island!"); return; }
         movFlower.gx=gx; movFlower.gz=gz;
         movFlower.mesh.position.set(gx,.4,gz);
         gardenGrid.set(`${gx},${gz}`,movFlower);
-        movFlower.mesh.traverse(c=>{ if(c.isMesh&&c.material){c.material.transparent=false;c.material.opacity=1;}});
+        _restoreMovMaterial(movFlower);
         movFlower=null; setMode('idle'); toast('🌸 Flower moved!'); saveFlowers();
     }
 
@@ -1432,7 +1958,7 @@
             const hits=ray.intersectObject(rayPlane);
             if (hits.length) {
                 const pt=hits[0].point, gx=Math.round(pt.x), gz=Math.round(pt.z);
-                const ok=!gardenGrid.has(`${gx},${gz}`)&&Math.hypot(gx,gz)<=PLANT_R;
+                const ok=isValidPlantSpot(gx,gz);
                 ghostGrp.position.set(gx,.4,gz); ghostGrp.visible=true;
                 ghostGrp.traverse(c=>{
                     if(c.isMesh && c.material && c.material.visible!==false){
@@ -1486,8 +2012,10 @@
                     // 4. Save the new bell count and the garden state
                     saveBells();
                     saveFlowers();
+                } else if (gardenGrid.has(`${gx},${gz}`)) {
+                    toast("There's already a flower here!");
                 } else {
-                    toast(gardenGrid.has(`${gx},${gz}`) ? "There's already a flower here!" : "Can't plant outside the island!");
+                    toast("Can't plant outside the island!");
                 }
             }
             return;
@@ -1588,6 +2116,489 @@
     }
 
     /* ═══════════════════════════════════════════════
+       FLOWER COLLECTION LOG
+       Tracks every type+color combo ever grown or bred.
+       Uncollected entries only ever show the color + flower
+       name — never the breeding recipe or odds, so figuring
+       out how to get a new one stays part of the fun.
+    ═══════════════════════════════════════════════ */
+    let collectedFlowers = new Set(JSON.parse(localStorage.getItem('t_collected') || '[]'));
+
+    function recordCollected(type, color, announce=true) {
+        const key = `${type}-${color}`;
+        if (collectedFlowers.has(key)) return;
+        collectedFlowers.add(key);
+        localStorage.setItem('t_collected', JSON.stringify([...collectedFlowers]));
+        if (announce) toast(`📖 New flower logged: ${cap(color)} ${FTYPES[type].name}!`);
+    }
+
+    function toggleFlowerLog() {
+        const wrap = document.getElementById('flogwrap');
+        const opening = !wrap.classList.contains('open');
+        wrap.classList.toggle('open');
+        if (opening) renderFlowerLog();
+    }
+
+    function renderFlowerLog() {
+        const totalPossible = Object.values(FTYPES).reduce((sum,t)=>sum+t.colors.length, 0);
+        document.getElementById('flogprogress').textContent = `${collectedFlowers.size} / ${totalPossible} collected`;
+        document.getElementById('flogbody').innerHTML = Object.entries(FTYPES).map(([typeKey,info])=>{
+            const chips = info.colors.map(color=>{
+                const got = collectedFlowers.has(`${typeKey}-${color}`);
+                return `<div class="flchip${got?' got':''}">
+                    <div class="flswatch" style="background:${CHEX[color]}"></div>
+                    <div class="flname">${cap(color)} ${info.name}</div>
+                    <span class="flstatus">${got?'✓':'🔒'}</span>
+                </div>`;
+            }).join('');
+            return `<div class="flsection"><div class="flsectionhead">${info.emoji} ${info.name}</div><div class="flgrid">${chips}</div></div>`;
+        }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════
+       HOUSE — lives on its own small island (see bridge above)
+    ═══════════════════════════════════════════════ */
+    let houseGroup = null;
+
+    function mkHouseMesh(tier, roofHex, wallHex) {
+        const g = new THREE.Group();
+        const wallMat = new THREE.MeshPhongMaterial({ color:wallHex, shininess:15 });
+        const roofMat = new THREE.MeshPhongMaterial({ color:roofHex, shininess:25 });
+        const doorMat = new THREE.MeshPhongMaterial({ color:0x5a3a22, shininess:10 });
+        const trimMat = new THREE.MeshPhongMaterial({ color:0xfff8ea, shininess:20 });
+        const paneMat = new THREE.MeshPhongMaterial({ color:0xcfe8f5, shininess:60 });
+        const chimMat = new THREE.MeshPhongMaterial({ color:0x9c6b52, shininess:10 });
+        const boxMat  = new THREE.MeshPhongMaterial({ color:0x6b4a2a, shininess:10 });
+        const flowerHex = [0xe83030,0xf578b0,0xf5d020];
+
+        function addFlowerBox(x,y,z) {
+            const box = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.14,0.16), boxMat);
+            box.position.set(x,y,z); box.castShadow=true; g.add(box);
+            for (let i=0;i<3;i++) {
+                const fl = new THREE.Mesh(new THREE.SphereGeometry(0.055,6,5), new THREE.MeshPhongMaterial({color:flowerHex[i%3]}));
+                fl.position.set(x-0.14+i*0.14, y+0.1, z); g.add(fl);
+            }
+        }
+        function addRoof(width, height, x, y, z) {
+            const roof = new THREE.Mesh(new THREE.ConeGeometry(width, height, 4), roofMat);
+            roof.rotation.y = Math.PI/4; roof.position.set(x,y,z); roof.castShadow=true; g.add(roof);
+        }
+        function addWindow(x,y,z) {
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.38,0.06), trimMat);
+            const pane  = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.28,0.07), paneMat);
+            frame.position.set(x,y,z); pane.position.set(x,y,z);
+            g.add(frame); g.add(pane);
+        }
+
+        if (tier===1) {
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.85,1.0), wallMat);
+            body.position.y=0.425; body.castShadow=true; body.receiveShadow=true; g.add(body);
+            addRoof(0.9, 0.55, 0, 0.85+0.275, 0);
+            const door = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.5,0.05), doorMat);
+            door.position.set(0,0.25,0.53); g.add(door);
+        } else if (tier===2) {
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.7,1.15,1.5), wallMat);
+            body.position.y=0.575; body.castShadow=true; body.receiveShadow=true; g.add(body);
+            addRoof(1.3, 0.75, 0, 1.15+0.375, 0);
+            const door = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.58,0.06), doorMat);
+            door.position.set(-0.4,0.29,0.78); g.add(door);
+            addWindow(0.35,0.68,0.78);
+            addFlowerBox(0.35,0.46,0.80);
+            const chim = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.55,0.2), chimMat);
+            chim.position.set(0.55,1.15+0.275,-0.3); chim.castShadow=true; g.add(chim);
+        } else if (tier===3) {
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2.3,1.35,1.9), wallMat);
+            body.position.y=0.675; body.castShadow=true; body.receiveShadow=true; g.add(body);
+            addRoof(1.7, 0.85, 0, 1.35+0.425, 0);
+            const porch = new THREE.Mesh(new THREE.BoxGeometry(0.95,1.0,0.95), wallMat);
+            porch.position.set(1.55,0.5,0.1); porch.castShadow=true; porch.receiveShadow=true; g.add(porch);
+            addRoof(0.75, 0.5, 1.55, 1.0+0.25, 0.1);
+            const door = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.6,0.06), doorMat);
+            door.position.set(-0.6,0.3,0.98); g.add(door);
+            addWindow(0.15,0.85,0.98);
+            addWindow(0.9,0.85,0.98);
+            addFlowerBox(0.15,0.6,1.0);
+            addFlowerBox(0.9,0.6,1.0);
+            const chim = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.7,0.24), chimMat);
+            chim.position.set(-0.85,1.35+0.35,-0.4); chim.castShadow=true; g.add(chim);
+        }
+        return g;
+    }
+
+    function rebuildHouse() {
+        if (houseGroup) {
+            scene.remove(houseGroup);
+            houseGroup.traverse(c=>{ if(c.isMesh){ c.geometry.dispose(); if(c.material) c.material.dispose(); }});
+            houseGroup = null;
+        }
+        if (houseTier > 0) {
+            houseGroup = mkHouseMesh(houseTier, houseRoof, houseWall);
+            houseGroup.position.set(HOUSE_ANCHOR.x, 0.45, HOUSE_ANCHOR.z);
+            houseGroup.rotation.y = HOUSE_FACING_ANGLE;
+            scene.add(houseGroup);
+        }
+    }
+
+    function buyHouseTier() {
+        const nextTier = houseUnlocked + 1;
+        const info = HOUSE_TIERS[nextTier];
+        if (!info) return;
+        if (bells < info.price) { toast("Not enough bells for that! 💸"); return; }
+        bells -= info.price; houseUnlocked = nextTier; houseTier = nextTier;
+        localStorage.setItem('t_houseUnlocked', String(houseUnlocked));
+        localStorage.setItem('t_houseTier', String(houseTier));
+        updateBellUI(); saveBells(); rebuildHouse();
+        toast(`${info.icon} Built the ${info.name}!`);
+        renderShop();
+    }
+
+    function equipHouseTier(tier) {
+        if (tier < 1 || tier > houseUnlocked || tier === houseTier) return;
+        houseTier = tier;
+        localStorage.setItem('t_houseTier', String(houseTier));
+        rebuildHouse();
+        toast(`${HOUSE_TIERS[tier].icon} Switched to the ${HOUSE_TIERS[tier].name}`);
+        renderShop();
+    }
+
+    function setHouseColor(part, hex) {
+        if (part==='roof') houseRoof = hex; else houseWall = hex;
+        localStorage.setItem(part==='roof' ? 't_houseRoof' : 't_houseWall', hex);
+        rebuildHouse();
+        renderShop();
+    }
+
+    /* ═══════════════════════════════════════════════
+       ANIMALS — brown cat & small golden retriever
+    ═══════════════════════════════════════════════ */
+    const animalState = { cat:null, dog:null };
+
+    // Two-segment leg (hip->knee->paw). hipY is solved so a leg bent by hipBase/kneeBase
+    // still lands its paw at local y=0 (ground), regardless of how much it's bent.
+    function legDrop(L1, L2, t1, t2) { return L1*Math.cos(t1) + L2*Math.cos(t1+t2); }
+    function mkLegPair(hipX, hipZ, L, angles, upperR, lowerR, pawR, furMat, pawMat) {
+        const hipY = legDrop(L[0], L[1], angles.h, angles.k);
+        const hip = new THREE.Group();
+        hip.position.set(hipX, hipY, hipZ);
+        hip.rotation.z = angles.h;
+        const upper = new THREE.Mesh(new THREE.CylinderGeometry(upperR[0],upperR[1],L[0],6), furMat);
+        upper.position.y = -L[0]/2; upper.castShadow = true; hip.add(upper);
+        const knee = new THREE.Group();
+        knee.position.set(0,-L[0],0);
+        knee.rotation.z = angles.k;
+        hip.add(knee);
+        const lower = new THREE.Mesh(new THREE.CylinderGeometry(lowerR[0],lowerR[1],L[1],6), furMat);
+        lower.position.y = -L[1]/2; lower.castShadow = true; knee.add(lower);
+        const paw = new THREE.Mesh(new THREE.SphereGeometry(pawR,6,5), pawMat);
+        paw.position.y = -L[1]; knee.add(paw);
+        return { hip, knee, hipBase:angles.h, kneeBase:angles.k };
+    }
+
+    function mkCatMesh() {
+        const g = new THREE.Group();
+        const furMat    = new THREE.MeshPhongMaterial({ color:0x8B5E3C, shininess:8 });
+        const darkFur   = new THREE.MeshPhongMaterial({ color:0x6B4726, shininess:8 });
+        const noseMat   = new THREE.MeshPhongMaterial({ color:0xE8A0A0, shininess:20 });
+        const pupilMat  = new THREE.MeshPhongMaterial({ color:0x1a1a1a, shininess:60 });
+        const whiskerMat = new THREE.MeshPhongMaterial({ color:0xffffff, shininess:10 });
+
+        // Body — one uniform blob
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.235,10,8), furMat);
+        body.scale.set(1.32,.65,.7);
+        body.position.set(-0.03,0.30,0); 
+        body.castShadow=true; 
+        g.add(body);
+
+        // Head — round, SHORT muzzle (the single biggest cat-vs-dog cue)
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.15,10,9), furMat);
+        head.position.set(0.32,0.35,0); head.castShadow=true; g.add(head);
+
+        const pupil1 = new THREE.Mesh(new THREE.SphereGeometry(0.012,5,4), pupilMat);
+        pupil1.scale.set(0.85,1.25,0.5);
+        pupil1.position.set(0.455,0.38,0.04);
+        g.add(pupil1);
+        const pupil2 = new THREE.Mesh(new THREE.SphereGeometry(0.012,5,4), pupilMat);
+        pupil2.scale.set(0.85,1.25,0.5);
+        pupil2.position.set(0.455,0.38,-1*0.04);
+        g.add(pupil2);
+        
+        const nose = new THREE.Mesh(new THREE.SphereGeometry(0.018,5,4), noseMat);
+        nose.position.set(0.485,0.32,0); g.add(nose);
+        
+        const whisker1 = new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,.07,3), whiskerMat);
+        whisker1.position.set(0.48, .30, -1*.06);
+        whisker1.rotation.x = 1.5;
+        const whisker2 = new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,.07,3), whiskerMat);
+        whisker2.position.set(0.48, .305, .06);
+        whisker2.rotation.x = 1.5;
+        const whisker3 = new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,.04,3), whiskerMat);
+        whisker3.position.set(0.48, .29, -1*.045);
+        whisker3.rotation.x = 1.5;
+        const whisker4 = new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,.04,3), whiskerMat);
+        whisker4.position.set(0.48, .295, .045);
+        whisker4.rotation.x = 1.5;
+        g.add(whisker1);
+        g.add(whisker2);
+        g.add(whisker3);
+        g.add(whisker4);
+
+        for (let s=-1;s<=1;s+=2) {
+            // Big flattened triangular ears, close-set on TOP of the head, with visible inner-ear color
+            const earGroup = new THREE.Group();
+            earGroup.position.set(0.35,0.42,s*0.085);
+            const ear = new THREE.Mesh(new THREE.ConeGeometry(0.075,0.15,3), furMat);
+            ear.scale.set(1,1,0.4); ear.position.y=0.075; ear.castShadow=true; earGroup.add(ear);
+            g.add(earGroup);
+        }
+
+        // Legs — front nearly straight; back legs carry the coiled, forward-kneed "haunch" bend real cats have
+        const legs = [];
+        const frontAngles = { h:-0.05, k:0.1 }, backAngles = { h:0.15, k:-0.65 };
+        [[0.17,0.09],[0.17,-0.09]].forEach(([x,z]) => {
+            legs.push(mkLegPair(x,z,[0.16,0.13],frontAngles,[0.026,0.030],[0.020,0.026],0.030,darkFur,darkFur));
+        });
+        [[-0.21,0.08],[-0.21,-0.08]].forEach(([x,z]) => {
+            legs.push(mkLegPair(x,z,[0.18,0.16],backAngles,[0.038,0.032],[0.024,0.028],0.030,darkFur,darkFur));
+        });
+        legs.forEach(l => g.add(l.hip));
+
+        // Tail — thicker, longer, held in a gentle upward J-curve rather than a thin tight curl
+        const tailCurve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(0,0,0), new THREE.Vector3(-0.08,0.18,0.03), new THREE.Vector3(0.02,0.35,0.08)
+        );
+        const tailPivot = new THREE.Group(); tailPivot.position.set(-0.30,0.30,0);
+        const tailMesh = new THREE.Mesh(new THREE.TubeGeometry(tailCurve,10,0.032,6,false), furMat);
+        tailMesh.castShadow=true; tailPivot.add(tailMesh);
+        g.add(tailPivot);
+
+        const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.30,0.30,0.55,7), new THREE.MeshBasicMaterial({visible:false}));
+        hb.position.y=0.27; g.add(hb);
+
+        return { group:g, legs, tail:tailPivot };
+    }
+
+    function mkDogMesh() {
+        const g = new THREE.Group();
+        const furMat   = new THREE.MeshPhongMaterial({ color:0xE0AE55, shininess:8 });
+        const darkFur  = new THREE.MeshPhongMaterial({ color:0xC4913D, shininess:8 });
+        const lightMat = new THREE.MeshPhongMaterial({ color:0xF7E4B8, shininess:8 });
+        const noseMat  = new THREE.MeshPhongMaterial({ color:0x3a2a1a, shininess:30 });
+        const pupilMat = new THREE.MeshPhongMaterial({ color:0x1a1a1a, shininess:60 });
+
+        // Body — rounder and sturdier than the cat (puppy build), with a deep chest bump up front
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.235,10,8), furMat);
+        body.scale.set(1.32,0.92,1.0); body.position.set(-0.03,0.30,0); body.castShadow=true; g.add(body);
+
+        // Head with a defined brow "stop" and a clearly elongated, broad snout — the biggest dog-vs-cat cue
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.17,10,9), furMat);
+        head.position.set(0.35,0.44,0); head.castShadow=true; g.add(head);
+        
+        const snoutTop = new THREE.Mesh(new THREE.CylinderGeometry(0.082,0.035,0.19,8), furMat);
+        snoutTop.rotation.z=Math.PI/2; 
+        snoutTop.position.set(0.51,0.42,0);
+        snoutTop.castShadow=true;
+        g.add(snoutTop);
+        const nose = new THREE.Mesh(new THREE.SphereGeometry(0.025,6,5), noseMat);
+        nose.position.set(0.615,0.42,0); g.add(nose);
+
+        const pupil1 = new THREE.Mesh(new THREE.SphereGeometry(0.013,5,4), pupilMat);
+        pupil1.position.set(0.49,0.52,0.04);
+        g.add(pupil1);
+        const pupil2 = new THREE.Mesh(new THREE.SphereGeometry(0.013,5,4), pupilMat);
+        pupil2.position.set(0.49,0.52,-1*0.04);
+        g.add(pupil2);
+
+        const ear1 = new THREE.Mesh(new THREE.SphereGeometry(0.105,8,7), darkFur);
+        ear1.scale.set(0.5,1.3,0.32);
+        ear1.position.set(0.35,0.42,0.155);
+        ear1.castShadow=true; 
+        g.add(ear1);
+        const ear2 = new THREE.Mesh(new THREE.SphereGeometry(0.105,8,7), darkFur);
+        ear2.scale.set(0.5,1.3,0.32);
+        ear2.position.set(0.35,0.42,-1*0.155);
+        ear2.castShadow=true;
+        g.add(ear2);
+
+        // Legs — straighter and sturdier than the cat's; back legs get only a mild hock bend
+        const legs = [];
+        const frontAngles = { h:-0.04, k:0.10 }, backAngles = { h:0.16, k:-0.30 };
+        [[0.17,0.109],[0.17,-0.109]].forEach(([x,z]) => {
+            legs.push(mkLegPair(x,z,[0.19,0.16],frontAngles,[0.042,0.036],[0.032,0.036],0.042,furMat,lightMat));
+        });
+        [[-0.22,0.109],[-0.22,-0.109]].forEach(([x,z]) => {
+            legs.push(mkLegPair(x,z,[0.20,0.17],backAngles,[0.046,0.038],[0.032,0.036],0.042,furMat,lightMat));
+        });
+        legs.forEach(l => g.add(l.hip));
+
+        // Tail — a fuller, feathered "flag" plume held level-to-up, not a tight curl
+        const tailCurve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(0,0,0), new THREE.Vector3(-0.08,-0.08,0.01), new THREE.Vector3(-0.12,-0.18,0.03)
+        );
+        const tailPivot = new THREE.Group(); 
+        tailPivot.position.set(-0.29,0.33,0);
+        const tailMesh = new THREE.Mesh(new THREE.TubeGeometry(tailCurve,10,0.05,7,false), furMat);
+        tailMesh.castShadow = true; tailPivot.add(tailMesh);
+        g.add(tailPivot);
+
+        const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,0.7,8), new THREE.MeshBasicMaterial({visible:false}));
+        hb.position.y=0.35; g.add(hb);
+
+        return { group:g, legs, tail:tailPivot };
+    }
+
+    function spawnAnimal(kind) {
+        if (animalState[kind]) return;
+        const parts = kind==='cat' ? mkCatMesh() : mkDogMesh();
+        const startX = kind==='cat' ? 3 : -3, startZ = 4.5;
+        parts.group.position.set(startX, 0.42, startZ);
+        scene.add(parts.group);
+        animalState[kind] = { parts, x:startX, z:startZ, targetX:startX, targetZ:startZ, mode:'idle', timer:1+Math.random()*2, heading:0 };
+    }
+
+    function pickWanderTarget() {
+        const ang = Math.random()*Math.PI*2, rad = Math.random()*PLANT_R*0.82;
+        return [Math.cos(ang)*rad, Math.sin(ang)*rad];
+    }
+
+    const LEG_PHASE = [0, Math.PI, Math.PI, 0]; // FL,FR,BL,BR -> diagonal pairs move together (a trot)
+
+    function updateAnimal(kind, dt, t) {
+        const a = animalState[kind]; if (!a) return;
+        const p = a.parts;
+        a.timer -= dt;
+
+        if (a.mode==='idle') {
+            if (a.timer<=0) { const [tx,tz]=pickWanderTarget(); a.targetX=tx; a.targetZ=tz; a.mode='walk'; }
+        } else if (a.mode==='walk') {
+            const dx=a.targetX-a.x, dz=a.targetZ-a.z, dist=Math.hypot(dx,dz);
+            if (dist<0.15) {
+                a.mode = Math.random()<0.35 ? 'sit' : 'idle';
+                a.timer = a.mode==='sit' ? 3+Math.random()*3 : 1+Math.random()*2;
+            } else {
+                const speed = kind==='cat' ? 1.0 : 1.25;
+                const nx=dx/dist, nz=dz/dist;
+                a.x += nx*speed*dt; a.z += nz*speed*dt;
+                a.heading = Math.atan2(-nz,nx);
+            }
+        } else if (a.mode==='sit') {
+            if (a.timer<=0) { a.mode='idle'; a.timer=0.5+Math.random(); }
+        }
+
+        if (a.mode==='walk') {
+            p.legs.forEach((l,i)=>{
+                const phase = t*9 + LEG_PHASE[i];
+                l.hip.rotation.z  = l.hipBase  + Math.sin(phase)*0.4;
+                l.knee.rotation.z = l.kneeBase + Math.max(0,Math.sin(phase+0.7))*0.3;
+            });
+        } else {
+            p.legs.forEach(l=>{
+                l.hip.rotation.z  += (l.hipBase  - l.hip.rotation.z)*0.12;
+                l.knee.rotation.z += (l.kneeBase - l.knee.rotation.z)*0.12;
+            });
+        }
+
+        p.group.position.set(a.x, 0.47, a.z);
+        p.group.rotation.y = a.heading;
+        p.tail.rotation.z = Math.sin(t*(a.mode==='walk'?7:3.5))*0.35;
+    }
+
+    function buyAnimal(kind) {
+        const info = ANIMALS[kind];
+        if (ownedAnimals[kind]) return;
+        if (bells < info.price) { toast("Not enough bells for that! 💸"); return; }
+        bells -= info.price; ownedAnimals[kind] = true;
+        localStorage.setItem('t_animals', JSON.stringify(ownedAnimals));
+        updateBellUI(); saveBells(); spawnAnimal(kind);
+        toast(`${info.icon} Welcome home, ${info.name}!`);
+        renderShop();
+    }
+
+    /* ═══════════════════════════════════════════════
+       SHOP
+    ═══════════════════════════════════════════════ */
+    function toggleShop() {
+        const wrap = document.getElementById('shopwrap');
+        const opening = !wrap.classList.contains('open');
+        wrap.classList.toggle('open');
+        if (opening) setShopTab(shopTab);
+    }
+
+    function setShopTab(tab) {
+        shopTab = tab;
+        ['bg','house','animals'].forEach(k=> document.getElementById('tab-'+k).classList.toggle('on', k===tab));
+        renderShop();
+    }
+
+    function renderShop() {
+        document.getElementById('bellsamt').textContent = bells.toLocaleString();
+        const body = document.getElementById('shopbody');
+        if (shopTab==='bg') body.innerHTML = renderShopBackgrounds();
+        else if (shopTab==='house') body.innerHTML = renderShopHouse();
+        else body.innerHTML = renderShopAnimals();
+    }
+
+    function renderShopBackgrounds() {
+        return Object.entries(THEMES).map(([key,t])=>{
+            const owned = ownedBackgrounds.has(key), equipped = currentBackground===key;
+            const btn = equipped
+                ? `<button class="btn sbuy owned">✓ Equipped</button>`
+                : owned
+                    ? `<button class="btn blu sbuy" onclick="equipBackground('${key}')">Equip</button>`
+                    : `<button class="btn gld sbuy" onclick="buyBackground('${key}')">Buy ${t.price}🔔</button>`;
+            return `<div class="sitem"><div class="sicon">${t.icon}</div><div class="sinfo"><div class="sname2">${t.name}</div><div class="sdesc">${t.desc}</div></div>${btn}</div>`;
+        }).join('');
+    }
+
+    function renderShopHouse() {
+        let html='';
+        for (let tier=1; tier<HOUSE_TIERS.length; tier++) {
+            const info = HOUSE_TIERS[tier];
+            let btn;
+            if (tier === houseTier) btn = `<button class="btn sbuy owned">✓ Equipped</button>`;
+            else if (tier <= houseUnlocked) btn = `<button class="btn blu sbuy" onclick="equipHouseTier(${tier})">Switch</button>`;
+            else if (tier === houseUnlocked+1) btn = `<button class="btn gld sbuy" onclick="buyHouseTier()">Buy ${info.price}🔔</button>`;
+            else btn = `<button class="btn sbuy locked">🔒 Locked</button>`;
+            html += `<div class="sitem"><div class="sicon">${info.icon}</div><div class="sinfo"><div class="sname2">${info.name}</div><div class="sdesc">${info.desc}</div></div>${btn}</div>`;
+        }
+        if (houseUnlocked>0) {
+            html += `<div class="cust"><div class="custlbl">🎨 Roof Color</div><div class="crow">${
+                HOUSE_ROOF_COLORS.map(c=>`<button class="cdot${houseRoof===c?' on':''}" style="background:${c}" onclick="setHouseColor('roof','${c}')"></button>`).join('')
+            }</div><div class="custlbl" style="margin-top:8px">🎨 Wall Color</div><div class="crow">${
+                HOUSE_WALL_COLORS.map(c=>`<button class="cdot${houseWall===c?' on':''}" style="background:${c}" onclick="setHouseColor('wall','${c}')"></button>`).join('')
+            }</div></div>`;
+        } else {
+            html += `<div class="shint">Build the Tiny Shed to unlock roof &amp; wall colors</div>`;
+        }
+        return html;
+    }
+
+    function renderShopAnimals() {
+        return Object.entries(ANIMALS).map(([key,info])=>{
+            const btn = ownedAnimals[key]
+                ? `<button class="btn sbuy owned">✓ Home</button>`
+                : `<button class="btn gld sbuy" onclick="buyAnimal('${key}')">Buy ${info.price}🔔</button>`;
+            return `<div class="sitem"><div class="sicon">${info.icon}</div><div class="sinfo"><div class="sname2">${info.name}</div><div class="sdesc">Wanders your island</div></div>${btn}</div>`;
+        }).join('');
+    }
+
+    function buyBackground(key) {
+        const t = THEMES[key];
+        if (bells < t.price) { toast("Not enough bells for that! 💸"); return; }
+        bells -= t.price; ownedBackgrounds.add(key); currentBackground = key;
+        localStorage.setItem('t_bgOwned', JSON.stringify([...ownedBackgrounds]));
+        localStorage.setItem('t_bg', key);
+        updateBellUI(); saveBells(); applyThemeEnvironment();
+        toast(`${t.icon} ${t.name} unlocked!`);
+        renderShop();
+    }
+    function equipBackground(key) {
+        currentBackground = key;
+        localStorage.setItem('t_bg', key);
+        applyThemeEnvironment();
+        renderShop();
+    }
+
+    /* ═══════════════════════════════════════════════
        SAVE / LOAD
     ═══════════════════════════════════════════════ */
     function saveFlowers() {
@@ -1611,16 +2622,21 @@
             const lastSave=parseInt(localStorage.getItem('t2_lastSave')||'0');
             const offMs=Math.min(Date.now()-lastSave, 7*24*3600*1000);
             JSON.parse(raw).forEach(f=>{
-                const offGrowth=Math.min(BREED, f.growth+offMs*GROW_BASE*1.0);
-                placeFlower(f.type, f.color, f.gx, f.gz, offGrowth);
+                const offGrowth=Math.min(BREED, f.growth+offMs*GROW_BASE);
+                placeFlower(f.type, f.color, f.gx, f.gz, offGrowth, false);
             });
             if (offMs>60000) toast(`🌿 ${Math.round(offMs/3600000*10)/10}h of growth applied!`);
         } else {
-            placeFlower('rose','red',-2,0,100);
-            placeFlower('rose','white',-1,0,100);
-            placeFlower('tulip','yellow',1,1,50);
-            placeFlower('cosmos','red',0,2,30);
+            placeFlower('rose','red',-2,0,100,false);
+            placeFlower('rose','white',-1,0,100,false);
+            placeFlower('tulip','yellow',1,1,50,false);
+            placeFlower('cosmos','red',0,2,30,false);
         }
+
+        // Shop state: house, animals
+        rebuildHouse();
+        if (ownedAnimals.cat) spawnAnimal('cat');
+        if (ownedAnimals.dog) spawnAnimal('dog');
     }
 
     /* ═══════════════════════════════════════════════
@@ -1651,6 +2667,10 @@
         scene.fog.color.lerp(VT.sky,L);
         dirtMat.color.lerp(VT.dirt,L*2);
         grassMat.color.lerp(VT.grass,L*2);
+        envGroundMat.color.lerp(VT.envGround,L*2);
+        envSandMat.color.lerp(VT.envGround,L*2);
+        envWaterMat.color.lerp(VT.envWaterColor,L*2);
+        envWaterMat.opacity += (VT.envWaterOpacity - envWaterMat.opacity)*L*2;
         ambL.intensity  +=(VT.ambI -ambL.intensity )*L*2;
         dirL.intensity  +=(VT.dirI -dirL.intensity )*L*2;
         moonL.intensity +=(VT.moonI-moonL.intensity)*L*2;
@@ -1674,6 +2694,24 @@
         }
         if (cloudMat.opacity>.02) cloudGrp.children.forEach(c=>{ c.position.x+=.7*dt; if(c.position.x>28)c.position.x=-28; });
 
+        // Ambient theme particles (background shop items)
+        const petalOn=VT.themeParticle==='petals', sparkleOn=VT.themeParticle==='sparkle', fireOn=VT.themeParticle==='fireflies';
+        PETALS.mat.opacity   += ((petalOn?0.75:0)   - PETALS.mat.opacity)   * L*2;
+        SPARKLE.mat.opacity  += ((sparkleOn?0.45:0) - SPARKLE.mat.opacity)  * L*2;
+        FIREFLIES.mat.opacity+= ((fireOn?0.85:0)    - FIREFLIES.mat.opacity)* L*2;
+        if (PETALS.mat.opacity>.02) {
+            for(let i=0;i<PETALS.n*3;i+=3){ PETALS.pos[i+1]-=1.1*dt; PETALS.pos[i]+=Math.sin(t*0.8+PETALS.pos[i+2])*dt*0.7; if(PETALS.pos[i+1]<0)PETALS.pos[i+1]=20; }
+            PETALS.pts.geometry.attributes.position.needsUpdate=true;
+        }
+        if (SPARKLE.mat.opacity>.02) {
+            for(let i=0;i<SPARKLE.n*3;i+=3){ SPARKLE.pos[i+1]-=0.55*dt; if(SPARKLE.pos[i+1]<0)SPARKLE.pos[i+1]=14; }
+            SPARKLE.pts.geometry.attributes.position.needsUpdate=true;
+        }
+        if (FIREFLIES.mat.opacity>.02) {
+            for(let i=0;i<FIREFLIES.n*3;i+=3){ FIREFLIES.pos[i+1]+=Math.sin(t*1.3+FIREFLIES.pos[i])*dt*0.35; FIREFLIES.pos[i]+=Math.sin(t*0.7+FIREFLIES.pos[i+2])*dt*0.3; }
+            FIREFLIES.pts.geometry.attributes.position.needsUpdate=true;
+        }
+
         // Lightning
         if (wType==='storm') {
             ltTimer-=dt; if(ltTimer<=0){ltgL.intensity=1.5+Math.random()*3;ltTimer=1.5+Math.random()*5;}
@@ -1695,6 +2733,10 @@
         // Ghost pulse
         if (ghostGrp.visible) ghostGrp.scale.setScalar(.85+Math.sin(t*4)*.025);
 
+        // Animals
+        updateAnimal('cat', dt, t);
+        updateAnimal('dog', dt, t);
+
         renderer.render(scene,camera);
     }
 
@@ -1708,6 +2750,7 @@
        BOOT
     ═══════════════════════════════════════════════ */
     loadState();
+    applyThemeEnvironment();
     renderBar();
     setInterval(applyGrowth, 30000);
     setInterval(saveFlowers, 10000);
